@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import ComingSoon from "./components/ComingSoon";
 import Home from "./components/Home";
 import Reels from "./components/Reels";
 import Photos from "./components/Photos";
@@ -13,6 +14,8 @@ import "./App.css";
 
 function AppInner() {
 
+  const showComingSoon = import.meta.env.VITE_SHOW_COMING_SOON === 'true';
+
   const scrollToTop = () => {
     document.documentElement.scrollTo({
       top: 0,
@@ -24,7 +27,7 @@ function AppInner() {
     <div className="min-h-screen bg-cream flex flex-col pb-16">
       <main className="flex-1">
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={showComingSoon ? <ComingSoon /> : <Home />} />
           <Route path="/reels" element={<Reels />} />
           <Route path="/photos" element={<Photos />} />
           <Route path="/videos" element={<Videos />} />
@@ -34,7 +37,8 @@ function AppInner() {
           <Route path="/contact" element={<ContactUs />} />
         </Routes>
       </main>
-      <BottomNav scrollToTop={scrollToTop} />
+      {!showComingSoon &&
+        <BottomNav scrollToTop={scrollToTop} />}
     </div>
   );
 }

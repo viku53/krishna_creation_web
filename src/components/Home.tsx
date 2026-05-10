@@ -107,9 +107,9 @@ const services = [
 ];
 
 const testimonials = [
-  { name: 'Priya & Arjun', text: 'Krishna Creation captured every emotion of our wedding perfectly. The reels were magical!', stars: 5 },
+  { name: 'Kinjal & Ronak', text: 'Krishna Creation captured every emotion of our wedding perfectly. The reels were magical!', stars: 5 },
   { name: 'Meera S.', text: 'The instant prints were so beautiful. Our family was blown away by the quality!', stars: 5 },
-  { name: 'Rahul & Divya', text: 'Absolutely cinematic. Every frame felt like a painting. Highly recommended!', stars: 5 },
+  { name: 'Kiran & Paren', text: 'Absolutely cinematic. Every frame felt like a painting. Highly recommended!', stars: 5 },
 ];
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
