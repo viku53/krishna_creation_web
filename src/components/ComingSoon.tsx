@@ -14,7 +14,7 @@ const ComingSoon: React.FC = () => {
       <div
         className="hero-bg"
         style={{
-          backgroundImage: 'url(/photos/05.webp)',
+          backgroundImage: 'url(/photos/Haldi/04.webp)',
           opacity: 0.6,
           filter: 'blur(4px) saturate(120%)',
           transform: 'scale(1.05)'

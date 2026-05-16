@@ -12,23 +12,14 @@ type Category = (typeof categories)[number];
 interface PhotoItem {
   id: number;
   url: string;
-  category: Category | 'General';
+  category: Category;
 }
 
 function buildPhotoList(): PhotoItem[] {
   const photos: PhotoItem[] = [];
   let id = 1;
 
-  // Root-level photos (General)
-  const rootFiles = [
-    '01.webp', '02.webp', '03.webp', '04.webp', '05.webp', '06.webp', '07.webp',
-    '08.webp', '09.webp', '10.webp', '12.webp', '13.webp', '14.webp',
-  ];
-  for (const f of rootFiles) {
-    photos.push({ id: id++, url: `/photos/${f}`, category: 'General' });
-  }
-
-  // Wedding (83 files)
+  // Wedding
   const weddingNumbered = Array.from({ length: 49 }, (_, i) => {
     const n = String(i + 1).padStart(2, '0');
     return `${n}.webp`;
@@ -39,7 +30,7 @@ function buildPhotoList(): PhotoItem[] {
     '0C8A7451.webp', '0C8A7462.webp', '0C8A7463.webp', '0C8A7504.webp',
     '0C8A7515.webp', '0C8A7631.webp', '0C8A7683.webp', '0C8A7695.webp',
     '0C8A7830.webp', '0C8A7949.webp', '0C8A8082.webp', '0C8A8120.webp',
-    '0C8A8199.webp', '0C8A8309.webp', '0C8A8332.webp', '0C8A8402.webp',
+    '0C8A8199.webp', '0C8A8309.webp', '0C8A8402.webp',
     '0C8A8412.webp', '0C8A8462.webp', '0C8A8491.webp', '0C8A8502.webp',
     '0C8A8574.webp',
     'DSC_0875.webp', 'DSC_0883.webp', 'DSC_0887.webp', 'DSC_0894.webp', 'DSC_1292.webp',

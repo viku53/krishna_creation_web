@@ -37,16 +37,31 @@ function useInView(threshold = 0.2) {
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
-// Mobile: all vertical/portrait photos
+// Mobile: PORTRAIT-only photos (height > width) — fills tall screens beautifully
 const heroPhotosMobile = [
-  '/photos/01.webp', '/photos/02.webp', '/photos/03.webp',
-  '/photos/07.webp', '/photos/08.webp', '/photos/13.webp',
+  '/photos/Wedding/02.webp',
+  '/photos/Haldi/01.webp',
+  '/photos/Wedding/05.webp',
+  '/photos/Engagment/01.webp',
+  '/photos/Wedding/09.webp',
+  '/photos/Haldi/07.webp',
+  '/photos/Wedding/22.webp',
+  '/photos/Engagment/04.webp',
+  '/photos/Wedding/25.webp',
+  '/photos/Haldi/13.webp',
 ];
 
-// Tablet & Desktop: all horizontal/landscape photos
+// Tablet & Desktop: LANDSCAPE-only photos (width > height) — fills wide screens beautifully
 const heroPhotosDesktop = [
-  '/photos/04.webp', '/photos/05.webp', '/photos/06.webp',
-  '/photos/09.webp', '/photos/10.webp', '/photos/12.webp', '/photos/14.webp',
+  '/photos/Wedding/01.webp',
+  '/photos/Haldi/05.webp',
+  '/photos/Wedding/12.webp',
+  '/photos/Sangeet/02.webp',
+  '/photos/Wedding/20.webp',
+  '/photos/Engagment/06.webp',
+  '/photos/Haldi/09.webp',
+  '/photos/Wedding/30.webp',
+  '/photos/Sangeet/04.webp',
 ];
 
 // ─── Responsive hook ──────────────────────────────────────────────────────────
@@ -75,7 +90,7 @@ const services = [
     desc: 'Timeless frames that tell your story with artistic precision.',
     color: 'from-rose-500/20 to-pink-500/10',
     accent: '#f43f5e',
-    bg: '/photos/05.webp',
+    bg: '/photos/Wedding/09.webp',
   },
   {
     to: '/reels',
@@ -84,7 +99,7 @@ const services = [
     desc: 'Cinematic short films crafted for the social-first world.',
     color: 'from-violet-500/20 to-purple-500/10',
     accent: '#8b5cf6',
-    bg: '/photos/06.webp',
+    bg: '/photos/Haldi/06.webp',
   },
   {
     to: '/videos',
@@ -93,7 +108,7 @@ const services = [
     desc: 'Full-length cinematic wedding films with emotion and depth.',
     color: 'from-blue-500/20 to-cyan-500/10',
     accent: '#3b82f6',
-    bg: '/photos/09.webp',
+    bg: '/photos/Pre Wedding/015.webp',
   },
   {
     to: '/instant-printing',
@@ -275,7 +290,7 @@ const Home: React.FC = () => {
         </div>
 
         <div className="portfolio-mosaic">
-          {['/photos/05.webp', '/photos/02.webp', '/photos/Wedding/13.webp', '/photos/Wedding/40.webp', '/photos/Wedding/07.webp'].map((src, i) => (
+          {['/photos/Wedding/05.webp', '/photos/Pre Wedding/02.webp', '/photos/Wedding/13.webp', '/photos/Wedding/40.webp', '/photos/Haldi/05.webp'].map((src, i) => (
             <div key={i} className={`mosaic-item mosaic-item--${i + 1}`}>
               <img src={src} alt={`Portfolio ${i + 1}`} className="mosaic-img" loading="lazy" decoding="async" />
             </div>
