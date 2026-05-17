@@ -1,21 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { FaPlay, FaPause } from "react-icons/fa";
-import { Film } from "lucide-react";
+import { Film, Loader2, CloudOff, Instagram } from "lucide-react";
+import { useDriveVideos } from "./useDriveVideos";
+import type { DriveVideoItem } from "./useDriveVideos";
 
-// ─── All reel files with captions ─────────────────────────────────────────────
-const allReels = [
-  { id: 1, url: '/reels/wedding.mp4', caption: 'Beautiful Wedding Moments ✨' },
-  { id: 2, url: '/reels/Prewedding.mp4', caption: 'Pre-Wedding Story 💕' },
-  { id: 3, url: '/reels/Reel-1.mp4', caption: 'Cinematic Highlights 🎬' },
-  { id: 4, url: '/reels/Reel-2.mp4', caption: 'Magical Frames 📸' },
-  { id: 5, url: '/reels/carnival.mp4', caption: 'Carnival Vibes 🎪' },
-  { id: 6, url: '/reels/dj.mp4', caption: 'DJ Night Energy 🎶' },
-  { id: 7, url: '/reels/getting-ready.mp4', caption: 'Getting Ready Moments 💄' },
-  { id: 8, url: '/reels/haldi.mp4', caption: 'Haldi Ceremony 💛' },
-  { id: 9, url: '/reels/prewedding-1.mp4', caption: 'Pre-Wedding Love Story 💑' },
-  { id: 10, url: '/reels/reception.mp4', caption: 'Grand Reception Night 🌟' },
-];
+const REELS_FOLDER_ID = import.meta.env.VITE_GOOGLE_DRIVE_REELS_FOLDER_ID as string;
 
 // Fisher-Yates shuffle
 function shuffle<T>(arr: T[]): T[] {
@@ -27,60 +17,89 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-const ReelSwipe = () => {
-  const reelList = useMemo(() => shuffle(allReels), []);
+// ── Loading skeleton ─────────────────────────────────────────────────────────
+const ReelSkeleton: React.FC = () => (
+  <div className="reel-page">
+    <div className="page-hero page-hero--dark">
+      <div className="page-hero-icon"><Film size={32} strokeWidth={1.5} /></div>
+      <h1 className="page-hero-title">Reels</h1>
+      <p className="page-hero-sub">Short cinematic clips from our best sessions.</p>
+    </div>
+    <div className="reel-wrapper">
+      <div className="reel-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#111' }}>
+        <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}>
+          <Loader2 size={40} className="gd-spinner" style={{ margin: '0 auto 12px', display: 'block' }} />
+          <p style={{ fontSize: '0.9rem' }}>Loading reels from Google Drive…</p>
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
+// ── Empty / Error state ──────────────────────────────────────────────────────
+const ReelEmpty: React.FC<{ error?: string | null }> = ({ error }) => (
+  <div className="reel-page">
+    <div className="page-hero page-hero--dark">
+      <div className="page-hero-icon"><Film size={32} strokeWidth={1.5} /></div>
+      <h1 className="page-hero-title">Reels</h1>
+      <p className="page-hero-sub">Short cinematic clips from our best sessions.</p>
+    </div>
+    <div className="reel-wrapper">
+      <div className="reel-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', background: '#111' }}>
+        <CloudOff size={40} style={{ color: 'rgba(255,255,255,0.4)' }} />
+        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', textAlign: 'center', maxWidth: 260 }}>
+          {error ?? 'No reels available yet. Check back soon!'}
+        </p>
+        <a
+          href="https://www.instagram.com/krishna_creation10/reels"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="reel-ctrl-btn reel-ctrl-btn--play"
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', textDecoration: 'none' }}
+        >
+          <Instagram size={16} /> Watch on Instagram
+        </a>
+      </div>
+    </div>
+  </div>
+);
+
+// ── Main reel viewer ─────────────────────────────────────────────────────────
+const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
   const [current, setCurrent] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const touchStartY = useRef(0);
   const touchDelta = useRef(0);
   const swiped = useRef(false);
+  const wheelLock = useRef(false);
 
   const reel = reelList[current];
 
-  // ── Navigate ───────────────────────────────────────────────
+  // ── Navigate ──────────────────────────────────────────────────────────────
   const goNext = useCallback(() => {
     if (current < reelList.length - 1) setCurrent(c => c + 1);
-  }, [current]);
+    else window.open("https://www.instagram.com/krishna_creation10/reels", "_blank");
+  }, [current, reelList.length]);
 
   const goPrev = useCallback(() => {
     if (current > 0) setCurrent(c => c - 1);
   }, [current]);
 
-  // ── Play / Pause ──────────────────────────────────────────
-  const togglePlay = useCallback(() => {
-    if (!videoRef.current) return;
-    if (isPlaying) {
-      videoRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      videoRef.current.play();
-      setIsPlaying(true);
-    }
-  }, [isPlaying]);
+  // Reset play state on reel change
+  useEffect(() => { setIsPlaying(false); }, [current]);
 
-  // ── Reset on reel change ──────────────────────────────────
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = 0;
-      videoRef.current.play().then(() => setIsPlaying(true)).catch(() => { });
-    }
-  }, [current]);
-
-  // ── Keyboard ──────────────────────────────────────────────
+  // ── Keyboard ──────────────────────────────────────────────────────────────
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "ArrowDown") goNext();
       else if (e.key === "ArrowUp") goPrev();
-      else if (e.key === " ") { e.preventDefault(); togglePlay(); }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [goNext, goPrev, togglePlay]);
+  }, [goNext, goPrev]);
 
-  // ── Wheel ─────────────────────────────────────────────────
-  const wheelLock = useRef(false);
+  // ── Wheel ─────────────────────────────────────────────────────────────────
   const handleWheel = (e: React.WheelEvent) => {
     if (wheelLock.current) return;
     if (e.deltaY > 40) goNext();
@@ -89,7 +108,7 @@ const ReelSwipe = () => {
     setTimeout(() => { wheelLock.current = false; }, 700);
   };
 
-  // ── Touch swipe ───────────────────────────────────────────
+  // ── Touch ─────────────────────────────────────────────────────────────────
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
     touchDelta.current = 0;
@@ -100,19 +119,9 @@ const ReelSwipe = () => {
     if (Math.abs(touchDelta.current) > 15) swiped.current = true;
   };
   const handleTouchEnd = () => {
-    if (!swiped.current) { togglePlay(); return; }
+    if (!swiped.current) return;
     if (touchDelta.current > 60) goNext();
     else if (touchDelta.current < -60) goPrev();
-  };
-
-  // ── Auto-advance / redirect ───────────────────────────────
-  const handleVideoEnd = () => {
-    if (current < reelList.length - 1) {
-      setTimeout(() => setCurrent(c => c + 1), 500);
-    } else {
-      // Last reel finished → go to Instagram
-      window.location.href = "https://www.instagram.com/krishna_creation10/reels";
-    }
   };
 
   return (
@@ -121,7 +130,8 @@ const ReelSwipe = () => {
         <title>Cinematic Reels | Krishna Creation</title>
         <meta name="description" content="Watch short cinematic clips and beautiful moments from our best photography sessions. Swipe up for more." />
       </Helmet>
-      {/* ── Page Hero (matches other pages) ─────────────────── */}
+
+      {/* Page Hero */}
       <div className="page-hero page-hero--dark">
         <div className="page-hero-icon"><Film size={32} strokeWidth={1.5} /></div>
         <h1 className="page-hero-title">Reels</h1>
@@ -131,7 +141,7 @@ const ReelSwipe = () => {
         </p>
       </div>
 
-      {/* ── Reel Container ─────────────────────────────────── */}
+      {/* Reel Container */}
       <div className="reel-wrapper">
         <div
           className="reel-container"
@@ -139,45 +149,45 @@ const ReelSwipe = () => {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          onClick={togglePlay}
         >
-          {/* Video */}
-          <video
-            ref={videoRef}
+          {/* Google Drive iframe player */}
+          <iframe
+            ref={iframeRef}
             key={reel.id}
+            src={reel.embedUrl}
             className="reel-video"
-            src={reel.url}
-            autoPlay
-            muted={false}
-            playsInline
-            loop={false}
-            onEnded={handleVideoEnd}
+            title={reel.caption}
+            allow="autoplay; fullscreen"
+            allowFullScreen
+            style={{
+              border: 'none',
+              width: '100%',
+              height: '100%',
+              background: '#000',
+            }}
+            onLoad={() => setIsPlaying(true)}
           />
+
+          {/* Loading overlay before iframe loads */}
+          {!isPlaying && (
+            <div className="reel-center-icon" style={{ pointerEvents: 'none' }}>
+              <Loader2 size={36} className="gd-spinner" />
+            </div>
+          )}
 
           {/* Progress dots */}
           <div className="reel-dots">
             {reelList.map((_, i) => (
-              <div key={i} className={`reel-dot ${i === current ? 'reel-dot--active' : ''}`} />
+              <div
+                key={i}
+                className={`reel-dot ${i === current ? 'reel-dot--active' : ''}`}
+                onClick={() => setCurrent(i)}
+                style={{ cursor: 'pointer' }}
+              />
             ))}
           </div>
 
-          {/* Mute button */}
-          {/* <button
-            className="reel-mute-btn"
-            onClick={(e) => { e.stopPropagation(); setIsMuted(m => !m); }}
-            aria-label="Toggle sound"
-          >
-            {isMuted ? <FaVolumeMute size={16} /> : <FaVolumeUp size={16} />}
-          </button> */}
-
-          {/* Play / Pause center indicator */}
-          {!isPlaying && (
-            <div className="reel-center-icon">
-              <FaPlay size={36} />
-            </div>
-          )}
-
-          {/* Bottom gradient + caption */}
+          {/* Bottom caption */}
           <div className="reel-bottom">
             <div className="reel-caption">{reel.caption}</div>
             <div className="reel-counter">{current + 1} / {reelList.length}</div>
@@ -191,7 +201,7 @@ const ReelSwipe = () => {
           )}
         </div>
 
-        {/* Controls below container */}
+        {/* Controls */}
         <div className="reel-controls">
           <button
             className={`reel-ctrl-btn ${current === 0 ? 'reel-ctrl-btn--disabled' : ''}`}
@@ -200,8 +210,11 @@ const ReelSwipe = () => {
           >
             ← Previous
           </button>
-          <button className="reel-ctrl-btn reel-ctrl-btn--play" onClick={togglePlay}>
-            {isPlaying ? <><FaPause size={14} /> Pause</> : <><FaPlay size={14} /> Play</>}
+          <button
+            className="reel-ctrl-btn reel-ctrl-btn--play"
+            onClick={() => window.open(`https://drive.google.com/file/d/${reel.id}/view`, '_blank')}
+          >
+            <FaPlay size={13} /> Open Full
           </button>
           <button
             className={`reel-ctrl-btn ${current === reelList.length - 1 ? 'reel-ctrl-btn--disabled' : ''}`}
@@ -214,6 +227,25 @@ const ReelSwipe = () => {
       </div>
     </div>
   );
+};
+
+// ── Root export ───────────────────────────────────────────────────────────────
+const ReelSwipe: React.FC = () => {
+  const { videos, loading, error } = useDriveVideos(REELS_FOLDER_ID);
+
+  const reelList = useMemo(() => shuffle(videos), [videos]);
+
+  if (!REELS_FOLDER_ID) {
+    return (
+      <ReelEmpty error="Reels folder not configured yet. Please add VITE_GOOGLE_DRIVE_REELS_FOLDER_ID to your .env file." />
+    );
+  }
+
+  if (loading) return <ReelSkeleton />;
+  if (error) return <ReelEmpty error={`Could not load reels: ${error}`} />;
+  if (reelList.length === 0) return <ReelEmpty />;
+
+  return <ReelViewer reelList={reelList} />;
 };
 
 export default ReelSwipe;

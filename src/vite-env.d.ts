@@ -10,6 +10,9 @@ interface ImportMetaEnv {
   readonly VITE_EMAILJS_PUBLIC_KEY: string;
   readonly VITE_EMAILJS_TO_EMAIL: string;
   readonly VITE_CONTACT_NUMBER: string;
+  readonly VITE_GOOGLE_DRIVE_API_KEY: string;
+  readonly VITE_GOOGLE_DRIVE_VIDEOS_FOLDER_ID: string;
+  readonly VITE_GOOGLE_DRIVE_REELS_FOLDER_ID: string;
 }
 
 interface ImportMeta {

@@ -1,7 +1,10 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { cacheGet, cacheSet } from '../lib/localCache';
 
 const FOLDER_ID = '1WFTV04WsMj09Ptx-p0O7TJ87iZJE5f3U';
-const API_KEY = 'AIzaSyA0pInL28SvIQlKeXiuHVly-dmqCqhwFyc';
+const API_KEY = import.meta.env.VITE_GOOGLE_DRIVE_API_KEY as string;
+
+const CACHE_KEY = 'kc_drive_photos_main';
 
 const BATCH_SIZE = 6; // How many images to reveal per batch
 
@@ -16,7 +19,15 @@ interface DrivePhoto {
 let cachedPhotos: DrivePhoto[] | null = null;
 
 const getDrivePhotos = async (): Promise<DrivePhoto[]> => {
+  // 1️⃣ Return in-memory cache (same session)
   if (cachedPhotos) return cachedPhotos;
+
+  // 2️⃣ Return localStorage cache (across sessions, 2-month TTL)
+  const stored = cacheGet<DrivePhoto[]>(CACHE_KEY);
+  if (stored) {
+    cachedPhotos = stored;
+    return stored;
+  }
 
   try {
     const res = await fetch(
@@ -37,6 +48,9 @@ const getDrivePhotos = async (): Promise<DrivePhoto[]> => {
       name: file.name,
       loaded: false,
     }));
+
+    // 3️⃣ Persist to localStorage for 2 months
+    cacheSet(CACHE_KEY, cachedPhotos);
 
     return cachedPhotos || [];
   } catch (err) {
