@@ -105,20 +105,24 @@ const Photos: React.FC = () => {
   const [prevCount, setPrevCount] = useState(0);
   const sentinelRef = React.useRef<HTMLDivElement | null>(null);
   const lastScrollY = React.useRef(0);
+  // Keep a ref copy of visibleCount so the observer closure never goes stale
+  // without needing to be recreated on every count change.
+  const visibleCountRef = React.useRef(INITIAL_BATCH);
+  // Prevent overlapping batch loads (the main cause of "breaks 3× while loading")
+  const isLoadingRef = React.useRef(false);
 
-  // Shuffle once per mount, then filter
+  // Keep ref in sync whenever state changes
+  React.useEffect(() => {
+    visibleCountRef.current = visibleCount;
+  }, [visibleCount]);
+
+  // Shuffle once per mount, then filter by category
   const shuffled = useMemo(() => shuffle(ALL_PHOTOS), []);
 
   const filteredPhotos = useMemo(() => {
     if (selected === 'All') return shuffled;
     return shuffled.filter(p => p.category === selected);
   }, [selected, shuffled]);
-
-  // Reset visible count when category changes
-  React.useEffect(() => {
-    setVisibleCount(INITIAL_BATCH);
-    setPrevCount(0);
-  }, [selected]);
 
   // The photos actually shown on screen
   const visiblePhotos = useMemo(
@@ -127,6 +131,15 @@ const Photos: React.FC = () => {
   );
   const hasMore = visibleCount < filteredPhotos.length;
 
+
+  // Reset visible count when category changes
+  React.useEffect(() => {
+    setVisibleCount(INITIAL_BATCH);
+    visibleCountRef.current = INITIAL_BATCH;
+    setPrevCount(0);
+    isLoadingRef.current = false;
+  }, [selected]);
+
   // Track scroll direction
   React.useEffect(() => {
     const onScroll = () => { lastScrollY.current = window.scrollY; };
@@ -134,34 +147,39 @@ const Photos: React.FC = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // ─── IntersectionObserver for infinite scroll (DOWN only) ──────
+  // ─── IntersectionObserver for infinite scroll ──────────────────────────────
+  // Observer is NOT recreated when visibleCount changes — that was the bug
+  // causing multiple rapid loads ("broken 3× while loading").
   React.useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
 
-    let prevY = 0;
-
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
-        // Only load more when scrolling DOWN and sentinel is visible
-        const isScrollingDown = entry.boundingClientRect.y < prevY;
-        prevY = entry.boundingClientRect.y;
+        if (!entry.isIntersecting) return;
+        if (isLoadingRef.current) return;         // already loading — skip
+        if (visibleCountRef.current >= filteredPhotos.length) return; // all shown
 
-        if (entry.isIntersecting && isScrollingDown && hasMore) {
-          // Small delay for smooth feel
-          setTimeout(() => {
-            setPrevCount(visibleCount);
-            setVisibleCount(prev => Math.min(prev + LOAD_MORE_BATCH, filteredPhotos.length));
-          }, 150);
-        }
+        isLoadingRef.current = true;
+        setTimeout(() => {
+          setPrevCount(visibleCountRef.current);
+          setVisibleCount(prev => {
+            const next = Math.min(prev + LOAD_MORE_BATCH, filteredPhotos.length);
+            visibleCountRef.current = next;
+            return next;
+          });
+          // Give the DOM time to reflow before allowing another load
+          setTimeout(() => { isLoadingRef.current = false; }, 400);
+        }, 150);
       },
-      { rootMargin: '300px' }
+      { rootMargin: '150px' }   // reduced from 300px to avoid eager double-firing
     );
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasMore, filteredPhotos.length, visibleCount]);
+  }, [filteredPhotos.length]);  // ← visibleCount intentionally removed from deps
+
 
   const { modalOpen, openModal, closeModal, prevModal, nextModal, modalItem, hasPrev, hasNext } = useMediaModal(filteredPhotos);
 

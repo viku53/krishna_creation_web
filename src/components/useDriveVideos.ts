@@ -13,6 +13,8 @@ export interface DriveVideoItem {
   thumbnailUrl: string;
   /** Direct stream URL — may hit redirect for large files */
   streamUrl: string;
+  /** Duration in milliseconds from Drive videoMediaMetadata (may be undefined) */
+  duration?: number;
 }
 
 function titleFromFilename(name: string): string {
@@ -44,7 +46,7 @@ async function fetchDriveVideos(folderId: string): Promise<DriveVideoItem[]> {
     `https://www.googleapis.com/drive/v3/files` +
     `?q=${query}` +
     `&key=${API_KEY}` +
-    `&fields=files(id,name,mimeType)` +
+    `&fields=files(id,name,mimeType,videoMediaMetadata)` +
     `&pageSize=100` +
     `&orderBy=name`;
 
@@ -55,7 +57,7 @@ async function fetchDriveVideos(folderId: string): Promise<DriveVideoItem[]> {
       if (!data.files || data.files.length === 0) return [];
 
       const items: DriveVideoItem[] = data.files.map(
-        (file: { id: string; name: string }) => ({
+        (file: { id: string; name: string; videoMediaMetadata?: { durationMillis?: string } }) => ({
           id: file.id,
           name: file.name,
           caption: titleFromFilename(file.name),
@@ -64,6 +66,10 @@ async function fetchDriveVideos(folderId: string): Promise<DriveVideoItem[]> {
           // High-res thumbnail: w1920 gives sharp cards even on retina displays
           thumbnailUrl: `https://drive.google.com/thumbnail?id=${file.id}&sz=w1920`,
           streamUrl: `https://drive.google.com/uc?export=download&id=${file.id}`,
+          // Drive returns durationMillis as a string
+          duration: file.videoMediaMetadata?.durationMillis
+            ? Number(file.videoMediaMetadata.durationMillis)
+            : undefined,
         })
       );
 

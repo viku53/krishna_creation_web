@@ -89,6 +89,23 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
   // Reset play state on reel change
   useEffect(() => { setIsPlaying(false); }, [current]);
 
+  // ── Auto-advance when reel finishes ──────────────────────────────────────
+  useEffect(() => {
+    // Only start the timer once the iframe has loaded and playback begins
+    if (!isPlaying) return;
+    // If Drive didn't return duration metadata, we can't auto-advance
+    if (!reel.duration) return;
+
+    // Add a 3 s buffer: onLoad fires when iframe HTML loads, not when video
+    // actually starts playing, so we account for that startup lag.
+    const timer = setTimeout(() => {
+      goNext();
+    }, reel.duration + 3000);
+
+    return () => clearTimeout(timer);
+  }, [isPlaying, current, reel.duration, goNext]);
+
+
   // ── Keyboard ──────────────────────────────────────────────────────────────
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -150,23 +167,42 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          {/* Google Drive iframe player */}
-          <iframe
-            ref={iframeRef}
-            key={reel.id}
-            src={reel.embedUrl}
-            className="reel-video"
-            title={reel.caption}
-            allow="autoplay; fullscreen"
-            allowFullScreen
-            style={{
-              border: 'none',
-              width: '100%',
-              height: '100%',
+          {/* Google Drive iframe player — overflow hidden to clip the Drive control bar */}
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            overflow: 'hidden',
+            pointerEvents: 'none',
+          }}>
+            <iframe
+              ref={iframeRef}
+              key={reel.id}
+              src={`${reel.embedUrl}?rm=minimal&autoplay=1`}
+              className="reel-video"
+              title={reel.caption}
+              allow="autoplay; fullscreen"
+              allowFullScreen
+              style={{
+                border: 'none',
+                width: '100%',
+                /* extend below the container so the Drive control bar is clipped */
+                height: 'calc(100% + 56px)',
+                background: '#000',
+                pointerEvents: 'all',
+              }}
+              onLoad={() => setIsPlaying(true)}
+            />
+            {/* Black strip that sits over the Drive control bar area */}
+            <div style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 56,
               background: '#000',
-            }}
-            onLoad={() => setIsPlaying(true)}
-          />
+              pointerEvents: 'none',
+            }} />
+          </div>
 
           {/* Loading overlay before iframe loads */}
           {!isPlaying && (
@@ -192,13 +228,6 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
             <div className="reel-caption">{reel.caption}</div>
             <div className="reel-counter">{current + 1} / {reelList.length}</div>
           </div>
-
-          {/* Swipe hint */}
-          {current < reelList.length - 1 && (
-            <div className="reel-swipe-hint">
-              <span>↑ Swipe up for next</span>
-            </div>
-          )}
         </div>
 
         {/* Controls */}
