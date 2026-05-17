@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
-import { FaPlay, FaPause } from "react-icons/fa";
+import { FaPlay } from "react-icons/fa";
 import { Film, Loader2, CloudOff, Instagram } from "lucide-react";
 import { useDriveVideos } from "./useDriveVideos";
 import type { DriveVideoItem } from "./useDriveVideos";

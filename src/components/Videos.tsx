@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Video, Play, Clock, X, ChevronLeft, ChevronRight, CloudOff, Loader2 } from 'lucide-react';
+import { Video, Play, X, ChevronLeft, ChevronRight, CloudOff, Loader2 } from 'lucide-react';
 import { useDriveVideos } from './useDriveVideos';
 import type { DriveVideoItem } from './useDriveVideos';
 

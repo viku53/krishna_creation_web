@@ -26,7 +26,7 @@ function titleFromFilename(name: string): string {
 const cacheKey = (folderId: string) => `kc_drive_videos_${folderId}`;
 
 // ── In-memory dedup (so parallel mounts share one in-flight request) ──────────
-const inFlight: Record<string, Promise<DriveVideoItem[]>> = {};
+const inFlight: Record<string, Promise<DriveVideoItem[]> | undefined> = {};
 
 async function fetchDriveVideos(folderId: string): Promise<DriveVideoItem[]> {
   // 1️⃣ Check localStorage cache first (2-month TTL)
