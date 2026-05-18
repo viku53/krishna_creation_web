@@ -108,7 +108,7 @@ const services = [
     desc: 'Full-length cinematic wedding films with emotion and depth.',
     color: 'from-blue-500/20 to-cyan-500/10',
     accent: '#3b82f6',
-    bg: '/photos/Pre Wedding/015.webp',
+    bg: '/photos/Pre-Wedding/024.webp',
   },
   {
     to: '/instant-printing',
@@ -296,7 +296,7 @@ const Home: React.FC = () => {
         </div>
 
         <div className="portfolio-mosaic">
-          {['/photos/Wedding/05.webp', '/photos/Pre Wedding/02.webp', '/photos/Wedding/13.webp', '/photos/Wedding/40.webp', '/photos/Haldi/05.webp'].map((src, i) => (
+          {['/photos/Wedding/05.webp', '/photos/Pre-Wedding/02.webp', '/photos/Wedding/13.webp', '/photos/Wedding/40.webp', '/photos/Haldi/05.webp'].map((src, i) => (
             <div key={i} className={`mosaic-item mosaic-item--${i + 1}`}>
               <img src={src} alt={`Portfolio ${i + 1}`} className="mosaic-img" loading="lazy" decoding="async" />
             </div>

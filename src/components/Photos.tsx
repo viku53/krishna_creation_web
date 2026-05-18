@@ -54,7 +54,7 @@ function buildPhotoList(): PhotoItem[] {
     photos.push({ id: id++, url: `/photos/Sangeet/${f}`, category: 'Sangeet' });
   }
 
-  // Pre Wedding (55 files from "Pre Wedding" folder)
+  // Pre-Wedding (55 files from "Pre-Wedding" folder)
   const preWeddingFiles = [
     '001.webp', '002.webp', '003.webp', '004.webp', '005.webp', '006.webp', '007.webp',
     '008.webp', '009.webp', '01.webp', '010.webp', '011.webp', '012.webp', '013.webp',
@@ -66,7 +66,7 @@ function buildPhotoList(): PhotoItem[] {
     '25.webp', '27.webp', '28.webp', '29.webp', '30.webp', '31.webp',
   ];
   for (const f of preWeddingFiles) {
-    photos.push({ id: id++, url: `/photos/Pre Wedding/${f}`, category: 'Pre-Wedding' });
+    photos.push({ id: id++, url: `/photos/Pre-Wedding/${f}`, category: 'Pre-Wedding' });
   }
 
   // Engagement (9 files)
