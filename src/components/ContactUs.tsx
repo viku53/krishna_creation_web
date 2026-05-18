@@ -135,8 +135,13 @@ const ContactUs: React.FC = () => {
   return (
     <div className="contact-page">
       <Helmet>
-        <title>Contact Us | Krishna Creation</title>
-        <meta name="description" content="Get in touch with Krishna Creation for your upcoming celebration. We bring your vision to life with cinematic storytelling and heartfelt photography." />
+        <title>Contact Us – Book a Photography Session | Krishna Creation</title>
+        <meta name="description" content="Contact Krishna Creation to book your wedding, pre-wedding or event photography in Mumbai. Get in touch with Nikunj Sindhwad for a personalised quote within 24 hours." />
+        <link rel="canonical" href="https://krishnacreationphotography.com/contact" />
+        <meta property="og:url" content="https://krishnacreationphotography.com/contact" />
+        <meta property="og:title" content="Contact Us | Krishna Creation Photography" />
+        <meta property="og:description" content="Book your photography session with Krishna Creation, Mumbai. Wedding, pre-wedding & event photography specialists." />
+        <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
       </Helmet>
       {/* ── Decorative blobs ──────────────────────────────────── */}
       <div className="cs-blob cs-blob--1" />

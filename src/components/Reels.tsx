@@ -144,8 +144,13 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
   return (
     <div className="reel-page">
       <Helmet>
-        <title>Cinematic Reels | Krishna Creation</title>
-        <meta name="description" content="Watch short cinematic clips and beautiful moments from our best photography sessions. Swipe up for more." />
+        <title>Cinematic Reels – Short Wedding Films | Krishna Creation</title>
+        <meta name="description" content="Watch cinematic short reels and highlight films from Krishna Creation – Mumbai's best wedding & event videographers. Swipe up for breathtaking moments." />
+        <link rel="canonical" href="https://krishnacreationphotography.com/reels" />
+        <meta property="og:url" content="https://krishnacreationphotography.com/reels" />
+        <meta property="og:title" content="Cinematic Reels | Krishna Creation" />
+        <meta property="og:description" content="Short cinematic reels from Krishna Creation – wedding, pre-wedding & event highlight films." />
+        <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
       </Helmet>
 
       {/* Page Hero */}

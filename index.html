@@ -3,44 +3,35 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/logo.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Krishna Creation</title>
-  <link rel="canonical" href="https://krishnacreationphotography.com/" />
-  <meta name="description"
-    content="Krishna Creation – Mumbai's premium photography studio specializing in wedding photography, portrait photography, Instant Photo Printing , product photography, pre-wedding shoots & cinematic reels. Modern Vision, Timeless Memories." />
 
-  <!-- SEO Keywords -->
-  <meta name="keywords"
-    content="photography studio Mumbai, best photographer Mumbai, wedding photography Mumbai, portrait photography, fashion photography, product photography, pre-wedding shoot, maternity photography, newborn photography, baby photography, couple photography, family photography, birthday photography, event photography, corporate photography, candid photography, cinematic reels, videography Mumbai, photographer near me, professional photographer India, wedding photographer, engagement photography, photography studio near me, photo studio Mumbai, creative photography, luxury photography, lifestyle photography, documentary photography, Krishna Creation, Nikunj Sindhwad photographer, Instant Photo Printing, Krishna Creation" />
+  <!-- Favicon & Touch Icon -->
+  <link rel="icon" type="image/png" href="/logo.png" />
+  <link rel="apple-touch-icon" href="/logo.png" />
+
+  <!-- Fallback title/description (overridden per-page by react-helmet-async) -->
+  <title>Krishna Creation</title>
+  <meta name="description" content="Krishna Creation – Mumbai's premium photography studio specialising in wedding photography, pre-wedding shoots, portrait, product photography, cinematic reels & videography. Modern Vision, Timeless Memories." />
+
+  <!-- Global SEO -->
   <meta name="author" content="Nikunj Sindhwad – Krishna Creation" />
   <meta name="robots" content="index, follow" />
   <meta name="googlebot" content="index, follow" />
-
-  <!-- Mobile & Web App Tags -->
   <meta name="theme-color" content="#1a1a2e" />
-  <link rel="apple-touch-icon" href="/logo.png" />
 
-  <!-- Open Graph / Facebook / LinkedIn / WhatsApp -->
+  <!-- Open Graph — global/fallback values (url, title, description overridden per-page) -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Krishna Creation" />
-  <meta property="og:description"
-    content="Mumbai's premium photography studio – wedding, portrait, fashion & product photography. Cinematic reels & videography and Instant Photo Printing. Modern Vision, Timeless Memories." />
-  <meta property="og:url" content="https://krishnacreationphotography.com/" />
-  <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
-  <meta property="og:image:alt" content="Krishna Creation Photography Logo" />
   <meta property="og:site_name" content="Krishna Creation" />
   <meta property="og:locale" content="en_IN" />
+  <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
+  <meta property="og:image:alt" content="Krishna Creation Photography Logo" />
 
-  <!-- Twitter Card -->
+  <!-- Twitter Card — global/fallback values -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Krishna Creation" />
-  <meta name="twitter:description"
-    content="Mumbai's premium photography studio – wedding, portrait, fashion & product photography. Cinematic reels & videography and Instant Photo Printing." />
   <meta name="twitter:image" content="https://krishnacreationphotography.com/logo.png" />
   <meta name="twitter:image:alt" content="Krishna Creation Photography" />
 
-  <!-- SEO Schema -->
+  <!-- Structured Data (JSON-LD) — organisation & website schema -->
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -111,6 +102,17 @@
         }
       ]
     }
+  </script>
+
+  <!-- SPA redirect restoration (pairs with public/404.html) -->
+  <script>
+    (function () {
+      var redirect = sessionStorage.redirect;
+      delete sessionStorage.redirect;
+      if (redirect && redirect !== location.href) {
+        history.replaceState(null, null, redirect);
+      }
+    })();
   </script>
 </head>
 

@@ -186,8 +186,13 @@ const Photos: React.FC = () => {
   return (
     <div className="photos-page dark-theme pb-4">
       <Helmet>
-        <title>Photography Portfolio | Krishna Creation</title>
-        <meta name="description" content="Explore our collection of timeless captures that define the essence of your special day. Premium photography portfolio by Nikunj Sindhwad." />
+        <title>Photography Portfolio – Wedding, Pre-Wedding & Events | Krishna Creation</title>
+        <meta name="description" content="Browse Krishna Creation's photography portfolio – wedding, pre-wedding, haldi, sangeet, engagement and event photography by Nikunj Sindhwad. Mumbai's finest photography studio." />
+        <link rel="canonical" href="https://krishnacreationphotography.com/photos" />
+        <meta property="og:url" content="https://krishnacreationphotography.com/photos" />
+        <meta property="og:title" content="Photography Portfolio | Krishna Creation" />
+        <meta property="og:description" content="Wedding, pre-wedding, haldi, sangeet & event photography by Krishna Creation, Mumbai." />
+        <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
       </Helmet>
 
       {/* ── Page Hero ──────────────────────────────────────────── */}

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Krishna Creation</title>
+  <!-- GitHub Pages SPA redirect fix -->
+  <!-- When GH Pages 404s a deep link (e.g. /photos), this page stores the
+       path in sessionStorage and redirects to the root so React Router can
+       hydrate and navigate to the correct route. This eliminates the
+       redirect chain that Google Search Console reports. -->
+  <script>
+    var l = window.location;
+    sessionStorage.redirect = l.href;
+    l.replace(
+      l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+      l.pathname.split('/').slice(0, 1).join('/') + '/?p=' +
+      encodeURIComponent(l.pathname + l.search) + l.hash
+    );
+  </script>
+</head>
+<body></body>
+</html>

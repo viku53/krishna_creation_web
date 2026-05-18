@@ -163,8 +163,14 @@ const Home: React.FC = () => {
   return (
     <div className="home-page">
       <Helmet>
-        <title>Krishna Creation | Premium Photography Studio</title>
-        <meta name="description" content="Premium Photography Studio. Modern Vision, Timeless Memories. From breathtaking photography to cinematic reels — we craft every detail with artistry and passion." />
+        <title>Krishna Creation | Premium Photography Studio Mumbai</title>
+        <meta name="description" content="Krishna Creation – Mumbai's premium photography studio specialising in wedding, pre-wedding, portrait & product photography, cinematic reels and videography. Modern Vision, Timeless Memories." />
+        <link rel="canonical" href="https://krishnacreationphotography.com/" />
+        <meta property="og:url" content="https://krishnacreationphotography.com/" />
+        <meta property="og:title" content="Krishna Creation | Premium Photography Studio Mumbai" />
+        <meta property="og:description" content="Mumbai's premium photography studio – wedding, portrait, fashion & product photography. Cinematic reels & videography. Modern Vision, Timeless Memories." />
+        <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
+        <meta name="twitter:url" content="https://krishnacreationphotography.com/" />
       </Helmet>
 
 
