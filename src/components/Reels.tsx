@@ -87,7 +87,7 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
   }, [current]);
 
   // Reset play state on reel change
-  useEffect(() => { setIsPlaying(false); }, [current]);
+  useEffect(() => { setIsPlaying(true); }, [current]);
 
   // ── Auto-advance when reel finishes ──────────────────────────────────────
   useEffect(() => {
@@ -182,7 +182,7 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
             <iframe
               ref={iframeRef}
               key={reel.id}
-              src={`${reel.embedUrl}?rm=minimal&autoplay=1`}
+              src={`${reel.embedUrl}?rm=minimal&autoplay=1&controls=0`}
               className="reel-video"
               title={reel.caption}
               allow="autoplay; fullscreen"
@@ -195,7 +195,7 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
                 background: '#000',
                 pointerEvents: 'all',
               }}
-              onLoad={() => setIsPlaying(true)}
+              onLoad={() => setTimeout(() => setIsPlaying(true), 0)}
             />
             {/* Black strip that sits over the Drive control bar area */}
             <div style={{
@@ -244,12 +244,12 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
           >
             ← Previous
           </button>
-          <button
+          {/* <button
             className="reel-ctrl-btn reel-ctrl-btn--play"
             onClick={() => window.open(`https://drive.google.com/file/d/${reel.id}/view`, '_blank')}
           >
             <FaPlay size={13} /> Open Full
-          </button>
+          </button> */}
           <button
             className={`reel-ctrl-btn ${current === reelList.length - 1 ? 'reel-ctrl-btn--disabled' : ''}`}
             onClick={goNext}
