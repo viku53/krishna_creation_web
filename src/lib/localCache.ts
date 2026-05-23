@@ -1,5 +1,5 @@
-/** 2 months in milliseconds */
-export const TWO_MONTHS_MS = 2 * 30 * 24 * 60 * 60 * 1000;
+/** 12 hours in milliseconds */
+export const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
 
 interface CacheEntry<T> {
   data: T;
@@ -10,7 +10,7 @@ interface CacheEntry<T> {
  * Store a value in localStorage with an expiry timestamp.
  * Silent on quota errors — cache is best-effort.
  */
-export function cacheSet<T>(key: string, data: T, ttlMs = TWO_MONTHS_MS): void {
+export function cacheSet<T>(key: string, data: T, ttlMs = TWELVE_HOURS_MS): void {
   try {
     const entry: CacheEntry<T> = { data, expiresAt: Date.now() + ttlMs };
     localStorage.setItem(key, JSON.stringify(entry));

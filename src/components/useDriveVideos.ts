@@ -11,7 +11,7 @@ export interface DriveVideoItem {
   embedUrl: string;
   /** Thumbnail from Drive */
   thumbnailUrl: string;
-  /** Direct stream URL — may hit redirect for large files */
+  /** Direct stream URL via uc?export=download — works for public files up to ~100 MB */
   streamUrl: string;
   /** Duration in milliseconds from Drive videoMediaMetadata (may be undefined) */
   duration?: number;
@@ -24,8 +24,8 @@ function titleFromFilename(name: string): string {
     .trim();
 }
 
-// ── Cache key per folder ──────────────────────────────────────────────────────
-const cacheKey = (folderId: string) => `kc_drive_videos_${folderId}`;
+// ── Cache key per folder (v6 = API v3 alt=media as primary streamUrl) ──────────
+const cacheKey = (folderId: string) => `kc_drive_videos_v6_${folderId}`;
 
 // ── In-memory dedup (so parallel mounts share one in-flight request) ──────────
 const inFlight: Record<string, Promise<DriveVideoItem[]> | undefined> = {};
@@ -46,7 +46,7 @@ async function fetchDriveVideos(folderId: string): Promise<DriveVideoItem[]> {
     `https://www.googleapis.com/drive/v3/files` +
     `?q=${query}` +
     `&key=${API_KEY}` +
-    `&fields=files(id,name,mimeType,videoMediaMetadata)` +
+    `&fields=files(id,name,mimeType,videoMediaMetadata(durationMillis,width,height))` +
     `&pageSize=100` +
     `&orderBy=name`;
 
@@ -61,11 +61,20 @@ async function fetchDriveVideos(folderId: string): Promise<DriveVideoItem[]> {
           id: file.id,
           name: file.name,
           caption: titleFromFilename(file.name),
-          // preview URL — Google's player picks the highest available quality
+          // preview URL — used as iframe fallback
           embedUrl: `https://drive.google.com/file/d/${file.id}/preview`,
-          // High-res thumbnail: w1920 gives sharp cards even on retina displays
-          thumbnailUrl: `https://drive.google.com/thumbnail?id=${file.id}&sz=w1920`,
-          streamUrl: `https://drive.google.com/uc?export=download&id=${file.id}`,
+          // Thumbnail — sz=w400 is reliably served for public files
+          // (sz=w1920 can be blocked or return 403 for large dimension requests)
+          thumbnailUrl: `https://drive.google.com/thumbnail?id=${file.id}&sz=w400`,
+          // PRIMARY: Drive API v3 alt=media
+          // - Confirmed working for up to 200MB+ files (tested)
+          // - No virus-scan warning page
+          // - Proper HTTP byte-range support (required for Safari/iOS)
+          // - Requires the file to be shared as "Anyone with the link can view"
+          // - Requires API key to be unrestricted OR allow the production domain
+          // If this 403s (e.g. API key domain restriction), Reels.tsx auto-falls
+          // back to the iframe embed which always works.
+          streamUrl: `https://www.googleapis.com/drive/v3/files/${file.id}?key=${API_KEY}&alt=media`,
           // Drive returns durationMillis as a string
           duration: file.videoMediaMetadata?.durationMillis
             ? Number(file.videoMediaMetadata.durationMillis)

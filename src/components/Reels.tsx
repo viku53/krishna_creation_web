@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
-// import { FaPlay } from "react-icons/fa";
-import { Film, Loader2, CloudOff, Instagram } from "lucide-react";
+import { Film, Loader2, CloudOff, Instagram, Volume2, VolumeX, AlertCircle } from "lucide-react";
 import { useDriveVideos } from "./useDriveVideos";
 import type { DriveVideoItem } from "./useDriveVideos";
 
@@ -17,7 +16,7 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-// ── Loading skeleton ─────────────────────────────────────────────────────────
+// ── Loading skeleton ──────────────────────────────────────────────────────────
 const ReelSkeleton: React.FC = () => (
   <div className="reel-page">
     <div className="page-hero page-hero--dark">
@@ -29,14 +28,14 @@ const ReelSkeleton: React.FC = () => (
       <div className="reel-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#111' }}>
         <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}>
           <Loader2 size={40} className="gd-spinner" style={{ margin: '0 auto 12px', display: 'block' }} />
-          <p style={{ fontSize: '0.9rem' }}>Loading reels from Google Drive…</p>
+          <p style={{ fontSize: '0.9rem' }}>Loading reels…</p>
         </div>
       </div>
     </div>
   </div>
 );
 
-// ── Empty / Error state ──────────────────────────────────────────────────────
+// ── Empty / Error state ───────────────────────────────────────────────────────
 const ReelEmpty: React.FC<{ error?: string | null }> = ({ error }) => (
   <div className="reel-page">
     <div className="page-hero page-hero--dark">
@@ -64,10 +63,27 @@ const ReelEmpty: React.FC<{ error?: string | null }> = ({ error }) => (
   </div>
 );
 
-// ── Main reel viewer ─────────────────────────────────────────────────────────
+// ── Main reel viewer ──────────────────────────────────────────────────────────
 const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
   const [current, setCurrent] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  /**
+   * mode:
+   *  'video'  — native <video> via uc?export=download (best: full control)
+   *  'iframe' — Google Drive /preview iframe (fallback when video gets 403)
+   *             iframes bypass the hotlink block because they are top-level navigations
+   *  'error'  — both failed, show error UI
+   */
+  const [mode, setMode] = useState<'video' | 'iframe' | 'error'>('video');
+
+  /**
+   * muted must start true — ALL browsers block unmuted autoplay (policy).
+   * We unmute after the first user tap (same pattern as Instagram / TikTok).
+   */
+  const [isMuted, setIsMuted] = useState(true);
+  const [userUnmuted, setUserUnmuted] = useState(false);
+
+  const videoRef = useRef<HTMLVideoElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const touchStartY = useRef(0);
   const touchDelta = useRef(0);
@@ -76,7 +92,7 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
 
   const reel = reelList[current];
 
-  // ── Navigate ──────────────────────────────────────────────────────────────
+  // ── Navigate ───────────────────────────────────────────────────────────────
   const goNext = useCallback(() => {
     if (current < reelList.length - 1) setCurrent(c => c + 1);
     else window.open("https://www.instagram.com/krishna_creation10/reels", "_blank");
@@ -86,37 +102,48 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
     if (current > 0) setCurrent(c => c - 1);
   }, [current]);
 
-  // Reset play state on reel change
-  useEffect(() => { setIsPlaying(true); }, [current]);
-
-  // ── Auto-advance when reel finishes ──────────────────────────────────────
+  // Reset state on reel change
   useEffect(() => {
-    // Only start the timer once the iframe has loaded and playback begins
-    if (!isPlaying) return;
-    // If Drive didn't return duration metadata, we can't auto-advance
-    if (!reel.duration) return;
+    setIsPlaying(false);
+    setMode('video');   // always try native video first for each new reel
+    const vid = videoRef.current;
+    if (vid) vid.load();
+  }, [current]);
 
-    // Add a 3 s buffer: onLoad fires when iframe HTML loads, not when video
-    // actually starts playing, so we account for that startup lag.
-    const timer = setTimeout(() => {
-      goNext();
-    }, reel.duration + 3000);
+  // webkit-playsinline for older iOS
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (vid) {
+      vid.setAttribute('webkit-playsinline', 'true');
+      vid.setAttribute('x-webkit-airplay', 'allow');
+    }
+  }, []);
 
-    return () => clearTimeout(timer);
-  }, [isPlaying, current, reel.duration, goNext]);
+  // Sync isMuted → actual video element
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (vid) vid.muted = isMuted;
+  }, [isMuted]);
 
+  // ── Mute toggle ────────────────────────────────────────────────────────────
+  const toggleMute = useCallback(() => {
+    setIsMuted(m => !m);
+    setUserUnmuted(true);
+  }, []);
 
-  // ── Keyboard ──────────────────────────────────────────────────────────────
+  // ── Keyboard ───────────────────────────────────────────────────────────────
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "ArrowDown") goNext();
       else if (e.key === "ArrowUp") goPrev();
+      else if (e.key === "m" || e.key === "M") toggleMute();
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [goNext, goPrev]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [goNext, goPrev, toggleMute]);
 
-  // ── Wheel ─────────────────────────────────────────────────────────────────
+  // ── Wheel ──────────────────────────────────────────────────────────────────
   const handleWheel = (e: React.WheelEvent) => {
     if (wheelLock.current) return;
     if (e.deltaY > 40) goNext();
@@ -125,7 +152,21 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
     setTimeout(() => { wheelLock.current = false; }, 700);
   };
 
-  // ── Touch ─────────────────────────────────────────────────────────────────
+  // ── Tap on video — first tap unmutes, subsequent taps toggle play/pause ────
+  const handleVideoTap = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    if (!userUnmuted) {
+      setIsMuted(false);
+      setUserUnmuted(true);
+      return;
+    }
+    const vid = videoRef.current;
+    if (!vid) return;
+    if (vid.paused) vid.play().catch(() => { });
+    else vid.pause();
+  }, [userUnmuted]);
+
+  // ── Touch swipe ────────────────────────────────────────────────────────────
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
     touchDelta.current = 0;
@@ -140,6 +181,14 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
     if (touchDelta.current > 60) goNext();
     else if (touchDelta.current < -60) goPrev();
   };
+
+  // ── Video error handler — step down: video → iframe → error ───────────────
+  const handleVideoError = useCallback(() => {
+    // uc?export=download got 403 (Google hotlink block) → fall back to iframe.
+    // The /preview iframe is a top-level navigation so it bypasses the block.
+    setMode('iframe');
+    setIsPlaying(true); // iframe manages its own playback
+  }, []);
 
   return (
     <div className="reel-page">
@@ -159,7 +208,7 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
         <h1 className="page-hero-title">Reels</h1>
         <p className="page-hero-sub">
           Short cinematic clips from our best sessions.
-          Swipe up to watch more — sound on for the full experience.
+          Tap the video to turn sound on — swipe to watch more.
         </p>
       </div>
 
@@ -172,48 +221,144 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          {/* Google Drive iframe player — overflow hidden to clip the Drive control bar */}
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            overflow: 'hidden',
-            pointerEvents: 'none',
-          }}>
-            <iframe
-              ref={iframeRef}
-              key={reel.id}
-              src={`${reel.embedUrl}?rm=minimal&autoplay=1&controls=0`}
-              className="reel-video"
-              title={reel.caption}
-              allow="autoplay; fullscreen"
-              allowFullScreen
-              style={{
-                border: 'none',
-                width: '100%',
-                /* extend below the container so the Drive control bar is clipped */
-                height: 'calc(100% + 56px)',
-                background: '#000',
-                pointerEvents: 'all',
-              }}
-              onLoad={() => setTimeout(() => setIsPlaying(true), 0)}
-            />
-            {/* Black strip that sits over the Drive control bar area */}
-            <div style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: 56,
-              background: '#000',
-              pointerEvents: 'none',
-            }} />
-          </div>
 
-          {/* Loading overlay before iframe loads */}
-          {!isPlaying && (
+          {/* ── MODE: native <video> ────────────────────────────────────────
+           *  `muted` is REQUIRED for autoplay on ALL browsers. Removing it
+           *  blocks autoplay AND can cascade into load failures. We unmute
+           *  via the mute button or first tap (same as Instagram / TikTok).
+           * ─────────────────────────────────────────────────────────────── */}
+          {mode === 'video' && (
+            <video
+              ref={videoRef}
+              key={reel.id}
+              src={reel.streamUrl}
+              className="reel-video"
+              autoPlay
+              muted
+              playsInline
+              preload="auto"
+              poster={reel.thumbnailUrl}
+              loop={false}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                background: '#000',
+                cursor: 'pointer',
+              }}
+              onCanPlay={() => setIsPlaying(true)}
+              onPlaying={() => setIsPlaying(true)}
+              onWaiting={() => setIsPlaying(false)}
+              onEnded={goNext}
+              onClick={handleVideoTap}
+              onError={handleVideoError}
+            />
+          )}
+
+          {/* ── MODE: iframe fallback (Drive /preview) ──────────────────────
+           *  Used when uc?export=download returns 403 (hotlink protection).
+           *  Iframes are top-level navigations, so they bypass the block.
+           *  We clip the Drive control bar with overflow:hidden + extra height.
+           * ─────────────────────────────────────────────────────────────── */}
+          {mode === 'iframe' && (
+            <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+              <iframe
+                ref={iframeRef}
+                key={`iframe-${reel.id}`}
+                src={`${reel.embedUrl}?autoplay=1&rm=minimal`}
+                title={reel.caption}
+                allow="autoplay; fullscreen"
+                allowFullScreen
+                style={{
+                  border: 'none',
+                  width: '100%',
+                  height: 'calc(100% + 56px)', // clip Drive's bottom control bar
+                  display: 'block',
+                }}
+                onLoad={() => setIsPlaying(true)}
+              />
+              {/* Black strip that hides the Drive control bar */}
+              <div style={{
+                position: 'absolute', bottom: 0, left: 0, right: 0,
+                height: 56, background: '#000', pointerEvents: 'none',
+              }} />
+            </div>
+          )}
+
+          {/* ── MODE: error ─────────────────────────────────────────────── */}
+          {mode === 'error' && (
+            <div style={{
+              position: 'absolute', inset: 0, zIndex: 10,
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              gap: '0.75rem', background: 'rgba(0,0,0,0.85)',
+              padding: '1.5rem',
+            }}>
+              <AlertCircle size={32} style={{ color: '#f87171' }} />
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.82rem', textAlign: 'center', margin: 0 }}>
+                Couldn't load this reel.
+              </p>
+              <a
+                href={`https://drive.google.com/file/d/${reel.id}/view`}
+                target="_blank" rel="noopener noreferrer"
+                className="reel-ctrl-btn reel-ctrl-btn--play"
+                style={{ textDecoration: 'none', fontSize: '0.78rem' }}
+              >
+                Open in Drive
+              </a>
+            </div>
+          )}
+
+          {/* Buffering spinner (only in video mode) */}
+          {mode === 'video' && !isPlaying && (
             <div className="reel-center-icon" style={{ pointerEvents: 'none' }}>
               <Loader2 size={36} className="gd-spinner" />
             </div>
+          )}
+
+          {/* "Tap for sound" badge — only in native video mode, before first unmute */}
+          {mode === 'video' && isPlaying && !userUnmuted && (
+            <div
+              onClick={handleVideoTap}
+              style={{
+                position: 'absolute',
+                bottom: '80px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 6,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 18px',
+                borderRadius: '999px',
+                background: 'rgba(0,0,0,0.65)',
+                backdropFilter: 'blur(10px)',
+                color: '#fff',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                animation: 'hintBounce 2s ease-in-out infinite',
+                userSelect: 'none',
+                letterSpacing: '0.03em',
+              }}
+            >
+              <Volume2 size={14} />
+              Tap for sound
+            </div>
+          )}
+
+          {/* Mute / Unmute button — only shown in native video mode */}
+          {mode === 'video' && (
+            <button
+              className="reel-mute-btn"
+              onClick={(e) => { e.stopPropagation(); toggleMute(); }}
+              aria-label={isMuted ? 'Unmute' : 'Mute'}
+              title={isMuted ? 'Sound off — click to unmute' : 'Sound on — click to mute'}
+            >
+              {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+            </button>
           )}
 
           {/* Progress dots */}
@@ -235,7 +380,7 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
           </div>
         </div>
 
-        {/* Controls */}
+        {/* Prev / Next controls */}
         <div className="reel-controls">
           <button
             className={`reel-ctrl-btn ${current === 0 ? 'reel-ctrl-btn--disabled' : ''}`}
@@ -244,12 +389,6 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
           >
             ← Previous
           </button>
-          {/* <button
-            className="reel-ctrl-btn reel-ctrl-btn--play"
-            onClick={() => window.open(`https://drive.google.com/file/d/${reel.id}/view`, '_blank')}
-          >
-            <FaPlay size={13} /> Open Full
-          </button> */}
           <button
             className={`reel-ctrl-btn ${current === reelList.length - 1 ? 'reel-ctrl-btn--disabled' : ''}`}
             onClick={goNext}
@@ -266,15 +405,11 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
 // ── Root export ───────────────────────────────────────────────────────────────
 const ReelSwipe: React.FC = () => {
   const { videos, loading, error } = useDriveVideos(REELS_FOLDER_ID);
-
   const reelList = useMemo(() => shuffle(videos), [videos]);
 
   if (!REELS_FOLDER_ID) {
-    return (
-      <ReelEmpty error="Reels folder not configured yet. Please add VITE_GOOGLE_DRIVE_REELS_FOLDER_ID to your .env file." />
-    );
+    return <ReelEmpty error="Reels folder not configured yet. Please add VITE_GOOGLE_DRIVE_REELS_FOLDER_ID to your .env file." />;
   }
-
   if (loading) return <ReelSkeleton />;
   if (error) return <ReelEmpty error={`Could not load reels: ${error}`} />;
   if (reelList.length === 0) return <ReelEmpty />;
