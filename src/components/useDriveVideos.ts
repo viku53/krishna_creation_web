@@ -24,8 +24,8 @@ function titleFromFilename(name: string): string {
     .trim();
 }
 
-// ── Cache key per folder (v6 = API v3 alt=media as primary streamUrl) ──────────
-const cacheKey = (folderId: string) => `kc_drive_videos_v6_${folderId}`;
+// ── Cache key per folder (v8 = API v3 alt=media restored for desktop) ──────────
+const cacheKey = (folderId: string) => `kc_drive_videos_v8_${folderId}`;
 
 // ── In-memory dedup (so parallel mounts share one in-flight request) ──────────
 const inFlight: Record<string, Promise<DriveVideoItem[]> | undefined> = {};

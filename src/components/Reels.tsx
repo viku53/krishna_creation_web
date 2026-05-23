@@ -186,6 +186,7 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
   const handleVideoError = useCallback(() => {
     // uc?export=download got 403 (Google hotlink block) → fall back to iframe.
     // The /preview iframe is a top-level navigation so it bypasses the block.
+    window.open("https://www.instagram.com/krishna_creation10/reels", "_self");
     setMode('iframe');
     setIsPlaying(true); // iframe manages its own playback
   }, []);
@@ -233,8 +234,8 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
               key={reel.id}
               src={reel.streamUrl}
               className="reel-video"
-              autoPlay
-              muted
+              autoPlay={true}
+              muted={isMuted}
               playsInline
               preload="auto"
               poster={reel.thumbnailUrl}
