@@ -137,6 +137,7 @@ const ContactUs: React.FC = () => {
       <Helmet>
         <title>Contact Us – Book a Photography Session | Krishna Creation</title>
         <meta name="description" content="Contact Krishna Creation to book your wedding, pre-wedding or event photography in Mumbai. Get in touch with Nikunj Sindhwad for a personalised quote within 24 hours." />
+        <meta name="keywords" content="contact Krishna Creation, book wedding photographer Mumbai, photography booking Mumbai, hire wedding photographer, photography inquiry Mumbai, pre-wedding shoot booking, event photography booking, Nikunj Sindhwad contact, photography studio contact Mumbai" />
         <link rel="canonical" href="https://krishnacreationphotography.com/contact" />
         <meta property="og:url" content="https://krishnacreationphotography.com/contact" />
         <meta property="og:title" content="Contact Us | Krishna Creation Photography" />

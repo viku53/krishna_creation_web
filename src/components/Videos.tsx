@@ -242,11 +242,12 @@ const Videos: React.FC = () => {
     <div className="videos-page">
       <Helmet>
         <title>Videography Portfolio – Cinematic Wedding Films | Krishna Creation</title>
-        <meta name="description" content="Watch Krishna Creation's cinematic videography portfolio – full-length wedding films, pre-wedding videos & event coverage in Mumbai. Experience moving stories crafted into visual masterpieces." />
+        <meta name="description" content="Watch Krishna Creation's cinematic videography portfolio – full-length wedding films, pre-wedding videos &amp; event coverage in Mumbai. Experience moving stories crafted into visual masterpieces." />
+        <meta name="keywords" content="wedding videography Mumbai, cinematic wedding film, wedding video Mumbai, pre-wedding video, full wedding film, 4K wedding videography, event videography, Krishna Creation videos, wedding cinematographer Mumbai, candid wedding film" />
         <link rel="canonical" href="https://krishnacreationphotography.com/videos" />
         <meta property="og:url" content="https://krishnacreationphotography.com/videos" />
         <meta property="og:title" content="Videography Portfolio | Krishna Creation" />
-        <meta property="og:description" content="Cinematic wedding films & event videography by Krishna Creation, Mumbai." />
+        <meta property="og:description" content="Cinematic wedding films &amp; event videography by Krishna Creation, Mumbai." />
         <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
       </Helmet>
 

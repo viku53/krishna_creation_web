@@ -8,6 +8,7 @@ const ComingSoon: React.FC = () => {
       <Helmet>
         <title>Coming Soon | Krishna Creation</title>
         <meta name="description" content="Krishna Creation - Premium Photography Studio. Our new website is launching soon." />
+        <meta name="keywords" content="Krishna Creation, wedding photographer Mumbai, photography studio Mumbai, coming soon, premium photography" />
       </Helmet>
 
       {/* Background Image & Overlay */}

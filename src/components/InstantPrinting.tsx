@@ -132,12 +132,13 @@ const ComingSoon: React.FC = () => {
   return (
     <div className="coming-soon-page">
       <Helmet>
-        <title>Instant Photo Printing – Custom Mugs, Frames & Gifts | Krishna Creation</title>
-        <meta name="description" content="Premium instant photo printing services by Krishna Creation Mumbai – custom mugs, photo frames, canvas prints, keychains & gift combos. Order online or book for your event." />
+        <title>Instant Photo Printing – Custom Mugs, Frames &amp; Gifts | Krishna Creation</title>
+        <meta name="description" content="Premium instant photo printing services by Krishna Creation Mumbai – custom mugs, photo frames, canvas prints, keychains &amp; gift combos. Order online or book for your event." />
+        <meta name="keywords" content="instant photo printing Mumbai, custom photo mug, photo frame online, canvas print Mumbai, photo keychain, gift combos Mumbai, personalised gifts, photo printing service, custom printing at events, Krishna Creation printing" />
         <link rel="canonical" href="https://krishnacreationphotography.com/instant-printing" />
         <meta property="og:url" content="https://krishnacreationphotography.com/instant-printing" />
         <meta property="og:title" content="Instant Printing – Custom Gifts | Krishna Creation" />
-        <meta property="og:description" content="Custom mugs, photo prints, frames & gift combos from Krishna Creation, Mumbai. Launching soon." />
+        <meta property="og:description" content="Custom mugs, photo prints, frames &amp; gift combos from Krishna Creation, Mumbai. Launching soon." />
         <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
       </Helmet>
       {/* Animated background blobs */}
@@ -242,12 +243,13 @@ const ProductListing: React.FC = () => {
   return (
     <div className="plp-page">
       <Helmet>
-        <title>Instant Photo Printing – Custom Mugs, Frames & Gifts | Krishna Creation</title>
-        <meta name="description" content="Order premium custom photo prints, mugs, canvas prints, frames & gift combos from Krishna Creation Mumbai. Turn your cherished memories into beautiful keepsakes." />
+        <title>Instant Photo Printing – Custom Mugs, Frames &amp; Gifts | Krishna Creation</title>
+        <meta name="description" content="Order premium custom photo prints, mugs, canvas prints, frames &amp; gift combos from Krishna Creation Mumbai. Turn your cherished memories into beautiful keepsakes." />
+        <meta name="keywords" content="instant photo printing Mumbai, custom photo mug, photo frame online, canvas print Mumbai, photo keychain, gift combos Mumbai, personalised gifts, photo printing service, custom printing at events, Krishna Creation printing" />
         <link rel="canonical" href="https://krishnacreationphotography.com/instant-printing" />
         <meta property="og:url" content="https://krishnacreationphotography.com/instant-printing" />
         <meta property="og:title" content="Instant Printing – Custom Gifts | Krishna Creation" />
-        <meta property="og:description" content="Custom mugs, photo prints, frames, canvas prints & gift combos from Krishna Creation, Mumbai." />
+        <meta property="og:description" content="Custom mugs, photo prints, frames, canvas prints &amp; gift combos from Krishna Creation, Mumbai." />
         <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
       </Helmet>
       {/* ── Hero ─────────────────────────────────────────────────────── */}

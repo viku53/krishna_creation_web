@@ -196,6 +196,7 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
       <Helmet>
         <title>Cinematic Reels – Short Wedding Films | Krishna Creation</title>
         <meta name="description" content="Watch cinematic short reels and highlight films from Krishna Creation – Mumbai's best wedding & event videographers. Swipe up for breathtaking moments." />
+        <meta name="keywords" content="wedding reels Mumbai, cinematic reels, short wedding films, wedding highlight video, pre-wedding reel, event reel, Instagram reels photographer Mumbai, Krishna Creation reels, wedding videographer Mumbai" />
         <link rel="canonical" href="https://krishnacreationphotography.com/reels" />
         <meta property="og:url" content="https://krishnacreationphotography.com/reels" />
         <meta property="og:title" content="Cinematic Reels | Krishna Creation" />

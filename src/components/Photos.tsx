@@ -186,12 +186,13 @@ const Photos: React.FC = () => {
   return (
     <div className="photos-page dark-theme pb-4">
       <Helmet>
-        <title>Photography Portfolio – Wedding, Pre-Wedding & Events | Krishna Creation</title>
+        <title>Photography Portfolio – Wedding, Pre-Wedding &amp; Events | Krishna Creation</title>
         <meta name="description" content="Browse Krishna Creation's photography portfolio – wedding, pre-wedding, haldi, sangeet, engagement and event photography by Nikunj Sindhwad. Mumbai's finest photography studio." />
+        <meta name="keywords" content="wedding photography portfolio Mumbai, pre-wedding photos, haldi photography, sangeet photography, engagement photography, candid wedding photos, Krishna Creation portfolio, wedding photographer portfolio Mumbai, Indian wedding photography" />
         <link rel="canonical" href="https://krishnacreationphotography.com/photos" />
         <meta property="og:url" content="https://krishnacreationphotography.com/photos" />
         <meta property="og:title" content="Photography Portfolio | Krishna Creation" />
-        <meta property="og:description" content="Wedding, pre-wedding, haldi, sangeet & event photography by Krishna Creation, Mumbai." />
+        <meta property="og:description" content="Wedding, pre-wedding, haldi, sangeet &amp; event photography by Krishna Creation, Mumbai." />
         <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
       </Helmet>
 
