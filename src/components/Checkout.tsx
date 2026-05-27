@@ -19,55 +19,86 @@ import {
   Loader2,
   MessageCircle,
   X,
+  Smartphone,
+  ExternalLink,
 } from 'lucide-react';
 import type { PrintProduct } from './InstantPrinting';
 import { sendOrderNotification, ENABLE_NOTIFICATIONS } from './sendNotification';
 
 // ─── Step definitions ─────────────────────────────────────────────────────────
 const STEPS = [
-  { key: 'review', label: 'Review', icon: <ShoppingBag size={16} /> },
+  { key: 'review',  label: 'Review',  icon: <ShoppingBag size={16} /> },
   { key: 'details', label: 'Details', icon: <User size={16} /> },
   { key: 'payment', label: 'Payment', icon: <CreditCard size={16} /> },
-  { key: 'confirm', label: 'Done', icon: <CheckCircle size={16} /> },
+  { key: 'confirm', label: 'Done',    icon: <CheckCircle size={16} /> },
+];
+
+// ─── UPI App icons (text-based badges) ────────────────────────────────────────
+const UPI_APPS = [
+  { name: 'GPay',     emoji: '🟢', color: '#1a73e8' },
+  { name: 'PhonePe',  emoji: '🟣', color: '#5f259f' },
+  { name: 'Paytm',    emoji: '🔵', color: '#00b9f1' },
+  { name: 'BHIM',     emoji: '🟠', color: '#ff6600' },
 ];
 
 const Checkout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Data from PDP
+  // ─── Extended state from PDP ───────────────────────────────────────────────
   const state = location.state as {
     product?: PrintProduct;
     imageCount?: number;
     previewUrls?: string[];
+    selectedTheme?: string;
+    selectedFrame?: string;
+    selectedSize?: string;
+    selectedSizeDims?: string;
+    quantity?: number;
+    customPrice?: number;
   } | null;
 
-  const product = state?.product;
-  const imageCount = state?.imageCount ?? 0;
-  const previewUrls = state?.previewUrls ?? [];
+  const product        = state?.product;
+  const imageCount     = state?.imageCount     ?? 0;
+  const previewUrls    = state?.previewUrls    ?? [];
+  const selectedTheme  = state?.selectedTheme;
+  const selectedFrame  = state?.selectedFrame;
+  const selectedSize   = state?.selectedSize;
+  const selectedSizeDims = state?.selectedSizeDims;
+  const quantity       = state?.quantity       ?? 1;
+  const customPrice    = state?.customPrice;
 
-  // ─── Form state ────────────────────────────────────────────
-  const [step, setStep] = useState(0);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [pincode, setPincode] = useState('');
-  const [notes, setNotes] = useState('');
+  // ─── Form state ────────────────────────────────────────────────────────────
+  const [step,          setStep]          = useState(0);
+  const [name,          setName]          = useState('');
+  const [email,         setEmail]         = useState('');
+  const [phone,         setPhone]         = useState('');
+  const [address,       setAddress]       = useState('');
+  const [city,          setCity]          = useState('');
+  const [pincode,       setPincode]       = useState('');
+  const [notes,         setNotes]         = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'upi' | 'cod'>('upi');
-  const [upiRef, setUpiRef] = useState('');
-  const [orderPlaced, setOrderPlaced] = useState(false);
-  const [placing, setPlacing] = useState(false);
-  const [orderId] = useState(() => Date.now().toString(36).toUpperCase());
+  const [upiRef,        setUpiRef]        = useState('');
+  const [orderPlaced,   setOrderPlaced]   = useState(false);
+  const [placing,       setPlacing]       = useState(false);
+  const [orderId]                         = useState(() => Date.now().toString(36).toUpperCase());
   const [showUnavailable, setShowUnavailable] = useState(false);
 
-  // Price calculation
-  const basePrice = product ? parseInt(product.price.replace(/[^\d]/g, '')) : 499;
+  // ─── Price calculation ─────────────────────────────────────────────────────
+  const basePrice   = customPrice ?? (product ? parseInt(product.price.replace(/[^\d]/g, '')) : 499);
   const deliveryFee = basePrice >= 999 ? 0 : 49;
-  const totalPrice = basePrice + deliveryFee;
+  const totalPrice  = basePrice + deliveryFee;
 
-  // ─── Step handlers ─────────────────────────────────────────
+  // ─── UPI Deep-link ─────────────────────────────────────────────────────────
+  const upiId      = 'krishnacreation@upi';
+  const upiDeepLink = `upi://pay?pa=${upiId}&pn=KrishnaCreation&am=${totalPrice}&tn=Order-${orderId}&cu=INR`;
+  const isMobile    = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+  const openUpiApp = () => {
+    window.location.href = upiDeepLink;
+  };
+
+  // ─── Step handlers ─────────────────────────────────────────────────────────
   const goNext = () => setStep(s => Math.min(s + 1, STEPS.length - 1));
   const goBack = () => setStep(s => Math.max(s - 1, 0));
 
@@ -81,22 +112,29 @@ const Checkout: React.FC = () => {
 
     setPlacing(true);
 
-    // Send email notification to owner
+    const extraNotes = [
+      selectedTheme  ? `Theme: ${selectedTheme}`              : '',
+      selectedFrame  ? `Frame: ${selectedFrame}`              : '',
+      selectedSize   ? `Size: ${selectedSize}${selectedSizeDims ? ` (${selectedSizeDims})` : ''}` : '',
+      quantity > 1   ? `Quantity: ${quantity}`                : '',
+      notes          ? `Notes: ${notes}`                      : '',
+    ].filter(Boolean).join(' | ');
+
     await sendOrderNotification({
       orderId,
-      customerName: name,
+      customerName:  name,
       customerEmail: email,
       customerPhone: phone,
       address,
       city,
       pincode,
-      productName: product.title,
-      productPrice: product.price,
-      totalAmount: totalPrice.toString(),
+      productName:   product.title,
+      productPrice:  product.price,
+      totalAmount:   totalPrice.toString(),
       imageCount,
       paymentMethod,
       upiRef,
-      notes,
+      notes: extraNotes,
     });
 
     setPlacing(false);
@@ -104,19 +142,19 @@ const Checkout: React.FC = () => {
     setStep(3);
   };
 
-  // ─── No product fallback ──────────────────────────────────
+  // ─── Customisation summary helper ─────────────────────────────────────────
+  const hasCustomisation = selectedTheme || selectedFrame || selectedSize;
+
+  // ─── No product fallback ──────────────────────────────────────────────────
   if (!product) {
     return (
       <div className="checkout-page">
         <div className="checkout-empty">
-          <div className="checkout-empty-icon">
-            <ShoppingBag size={48} />
-          </div>
+          <div className="checkout-empty-icon"><ShoppingBag size={48} /></div>
           <h2>Your cart is empty</h2>
           <p>Browse our products and add items to your cart.</p>
           <Link to="/instant-printing" className="checkout-empty-btn">
-            <ShoppingBag size={16} />
-            Browse Products
+            <ShoppingBag size={16} /> Browse Products
           </Link>
         </div>
       </div>
@@ -125,17 +163,16 @@ const Checkout: React.FC = () => {
 
   return (
     <div className="checkout-page">
-      {/* ── Top bar ──────────────────────────────────── */}
+      {/* ── Top bar ──────────────────────────────────────────────────── */}
       <div className="checkout-topbar">
         <button onClick={() => navigate(-1)} className="checkout-back-btn">
-          <ArrowLeft size={18} />
-          <span>Back</span>
+          <ArrowLeft size={18} /><span>Back</span>
         </button>
         <span className="checkout-topbar-title">Checkout</span>
         <div style={{ width: 80 }} />
       </div>
 
-      {/* ── Stepper ──────────────────────────────────── */}
+      {/* ── Stepper ──────────────────────────────────────────────────── */}
       <div className="checkout-stepper">
         {STEPS.map((s, i) => (
           <React.Fragment key={s.key}>
@@ -152,16 +189,13 @@ const Checkout: React.FC = () => {
         ))}
       </div>
 
-      {/* ── Step Content ─────────────────────────────── */}
+      {/* ── Step content ─────────────────────────────────────────────── */}
       <div className="checkout-content">
 
         {/* ═══ STEP 0: ORDER REVIEW ═══ */}
         {step === 0 && (
           <div className="checkout-step-content checkout-animate-in">
-            <div className="checkout-section-title">
-              <Package size={18} />
-              Order Review
-            </div>
+            <div className="checkout-section-title"><Package size={18} /> Order Review</div>
 
             {/* Product card */}
             <div className="checkout-product-card">
@@ -179,6 +213,34 @@ const Checkout: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {/* Customisation details */}
+            {hasCustomisation && (
+              <div className="checkout-custom-card">
+                <div className="checkout-mini-heading">✨ Customisation Details</div>
+                {selectedTheme && (
+                  <div className="checkout-custom-row">
+                    <span>🎨 Theme</span><span>{selectedTheme}</span>
+                  </div>
+                )}
+                {selectedFrame && (
+                  <div className="checkout-custom-row">
+                    <span>🖼️ Frame Style</span><span>{selectedFrame}</span>
+                  </div>
+                )}
+                {selectedSize && (
+                  <div className="checkout-custom-row">
+                    <span>📐 Print Size</span>
+                    <span>{selectedSize}{selectedSizeDims ? ` · ${selectedSizeDims}` : ''}</span>
+                  </div>
+                )}
+                {quantity > 1 && (
+                  <div className="checkout-custom-row">
+                    <span>🔢 Quantity</span><span>{quantity} prints</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Uploaded previews */}
             {previewUrls.length > 0 && (
@@ -198,7 +260,10 @@ const Checkout: React.FC = () => {
             {/* Price breakdown */}
             <div className="checkout-price-card">
               <div className="checkout-price-row">
-                <span>Product Price</span>
+                <span>
+                  Product Price
+                  {quantity > 1 && selectedSize && <span className="checkout-price-small"> ({quantity} × ₹{basePrice / quantity})</span>}
+                </span>
                 <span>₹{basePrice}</span>
               </div>
               <div className="checkout-price-row">
@@ -209,30 +274,19 @@ const Checkout: React.FC = () => {
               </div>
               <div className="checkout-price-divider" />
               <div className="checkout-price-row checkout-price-total">
-                <span>Total</span>
-                <span>₹{totalPrice}</span>
+                <span>Total</span><span>₹{totalPrice}</span>
               </div>
             </div>
 
             {/* Trust badges */}
             <div className="checkout-trust-row">
-              <div className="checkout-trust-badge">
-                <Shield size={14} />
-                <span>Secure Checkout</span>
-              </div>
-              <div className="checkout-trust-badge">
-                <Truck size={14} />
-                <span>Fast Delivery</span>
-              </div>
-              <div className="checkout-trust-badge">
-                <Clock size={14} />
-                <span>3-5 Days</span>
-              </div>
+              <div className="checkout-trust-badge"><Shield size={14} /><span>Secure</span></div>
+              <div className="checkout-trust-badge"><Truck size={14} /><span>Fast Delivery</span></div>
+              <div className="checkout-trust-badge"><Clock size={14} /><span>3-5 Days</span></div>
             </div>
 
             <button className="checkout-next-btn" onClick={goNext}>
-              Continue to Details
-              <ChevronRight size={18} />
+              Continue to Details <ChevronRight size={18} />
             </button>
           </div>
         )}
@@ -240,128 +294,67 @@ const Checkout: React.FC = () => {
         {/* ═══ STEP 1: SHIPPING DETAILS ═══ */}
         {step === 1 && (
           <div className="checkout-step-content checkout-animate-in">
-            <div className="checkout-section-title">
-              <MapPin size={18} />
-              Shipping Details
-            </div>
+            <div className="checkout-section-title"><MapPin size={18} /> Shipping Details</div>
 
             <form onSubmit={e => { e.preventDefault(); goNext(); }} className="checkout-form">
               <div className="checkout-form-row">
                 <div className="checkout-form-group">
-                  <label className="checkout-label">
-                    <User size={14} />
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="John Doe"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    className="checkout-input"
-                    minLength={2}
-                    required
-                  />
+                  <label className="checkout-label"><User size={14} /> Full Name</label>
+                  <input type="text" placeholder="John Doe" value={name}
+                    onChange={e => setName(e.target.value)} className="checkout-input"
+                    minLength={2} required />
                 </div>
                 <div className="checkout-form-group">
-                  <label className="checkout-label">
-                    <Phone size={14} />
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    placeholder="+91 98765 43210"
-                    value={phone}
-                    onChange={e => setPhone(e.target.value)}
-                    className="checkout-input"
-                    pattern="^[0-9+\-\s()]{10,15}$"
-                    title="Please enter a valid phone number (10-15 digits)"
-                    required
-                  />
+                  <label className="checkout-label"><Phone size={14} /> Phone Number</label>
+                  <input type="tel" placeholder="+91 98765 43210" value={phone}
+                    onChange={e => setPhone(e.target.value)} className="checkout-input"
+                    pattern="^[0-9+\-\s()]{10,15}$" title="Please enter a valid phone number (10-15 digits)" required />
                 </div>
               </div>
 
               <div className="checkout-form-group">
-                <label className="checkout-label">
-                  <Mail size={14} />
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  placeholder="john@example.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className="checkout-input"
+                <label className="checkout-label"><Mail size={14} /> Email Address</label>
+                <input type="email" placeholder="john@example.com" value={email}
+                  onChange={e => setEmail(e.target.value)} className="checkout-input"
                   pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$"
-                  title="Please enter a valid email address"
-                  required
-                />
+                  title="Please enter a valid email address" required />
               </div>
 
               <div className="checkout-form-group">
-                <label className="checkout-label">
-                  <MapPin size={14} />
-                  Delivery Address
-                </label>
-                <textarea
-                  placeholder="House no, Street, Locality"
-                  value={address}
-                  onChange={e => setAddress(e.target.value)}
-                  className="checkout-textarea"
-                  rows={3}
-                  minLength={5}
-                  required
-                />
+                <label className="checkout-label"><MapPin size={14} /> Delivery Address</label>
+                <textarea placeholder="House no, Street, Locality" value={address}
+                  onChange={e => setAddress(e.target.value)} className="checkout-textarea"
+                  rows={3} minLength={5} required />
               </div>
 
               <div className="checkout-form-row">
                 <div className="checkout-form-group">
                   <label className="checkout-label">City</label>
-                  <input
-                    type="text"
-                    placeholder="Mumbai"
-                    value={city}
-                    onChange={e => setCity(e.target.value)}
-                    className="checkout-input"
-                    minLength={2}
-                    required
-                  />
+                  <input type="text" placeholder="Mumbai" value={city}
+                    onChange={e => setCity(e.target.value)} className="checkout-input"
+                    minLength={2} required />
                 </div>
                 <div className="checkout-form-group">
                   <label className="checkout-label">Pincode</label>
-                  <input
-                    type="text"
-                    placeholder="400001"
-                    value={pincode}
-                    onChange={e => setPincode(e.target.value)}
-                    className="checkout-input"
-                    pattern="^[0-9]{6}$"
-                    title="Please enter a 6-digit Pincode"
-                    maxLength={6}
-                    required
-                  />
+                  <input type="text" placeholder="400001" value={pincode}
+                    onChange={e => setPincode(e.target.value)} className="checkout-input"
+                    pattern="^[0-9]{6}$" title="Please enter a 6-digit Pincode"
+                    maxLength={6} required />
                 </div>
               </div>
 
               <div className="checkout-form-group">
                 <label className="checkout-label">Order Notes (optional)</label>
-                <textarea
-                  placeholder="Any special instructions..."
-                  value={notes}
-                  onChange={e => setNotes(e.target.value)}
-                  className="checkout-textarea"
-                  rows={2}
-                />
+                <textarea placeholder="Any special instructions..." value={notes}
+                  onChange={e => setNotes(e.target.value)} className="checkout-textarea" rows={2} />
               </div>
+
               <div className="checkout-btn-row">
                 <button type="button" className="checkout-back-step-btn" onClick={goBack}>
                   <ArrowLeft size={16} /> Back
                 </button>
-                <button
-                  type="submit"
-                  className="checkout-next-btn"
-                >
-                  Continue to Payment
-                  <ChevronRight size={18} />
+                <button type="submit" className="checkout-next-btn">
+                  Continue to Payment <ChevronRight size={18} />
                 </button>
               </div>
             </form>
@@ -371,12 +364,9 @@ const Checkout: React.FC = () => {
         {/* ═══ STEP 2: PAYMENT ═══ */}
         {step === 2 && (
           <div className="checkout-step-content checkout-animate-in">
-            <div className="checkout-section-title">
-              <CreditCard size={18} />
-              Payment
-            </div>
+            <div className="checkout-section-title"><CreditCard size={18} /> Payment</div>
 
-            {/* Order summary mini */}
+            {/* Order mini summary */}
             <div className="checkout-order-mini">
               <div className="checkout-order-mini-left">
                 <div className="checkout-order-mini-emoji" style={{ background: product.gradient }}>
@@ -384,28 +374,35 @@ const Checkout: React.FC = () => {
                 </div>
                 <div>
                   <div className="checkout-order-mini-name">{product.title}</div>
-                  <div className="checkout-order-mini-meta">{imageCount} photos · Ships to {city}</div>
+                  <div className="checkout-order-mini-meta">
+                    {imageCount} photo{imageCount !== 1 ? 's' : ''}
+                    {selectedSize ? ` · ${selectedSize}` : ''}
+                    {quantity > 1 ? ` × ${quantity}` : ''}
+                    {city ? ` · Ships to ${city}` : ''}
+                  </div>
                 </div>
               </div>
               <div className="checkout-order-mini-price">₹{totalPrice}</div>
             </div>
 
-            {/* Payment methods */}
             <form onSubmit={e => { e.preventDefault(); handlePlaceOrder(); }}>
+              {/* Payment method chooser */}
               <div className="checkout-payment-methods">
                 <div className="checkout-mini-heading">Choose Payment Method</div>
                 <div className="checkout-payment-options">
                   <button
+                    type="button"
                     className={`checkout-payment-option ${paymentMethod === 'upi' ? 'checkout-payment-option--active' : ''}`}
                     onClick={() => setPaymentMethod('upi')}
                   >
                     <div className="checkout-payment-icon">💳</div>
                     <div>
                       <div className="checkout-payment-title">UPI / QR Code</div>
-                      <div className="checkout-payment-desc">Pay via Google Pay, PhonePe, etc.</div>
+                      <div className="checkout-payment-desc">Pay via Google Pay, PhonePe, Paytm etc.</div>
                     </div>
                   </button>
                   <button
+                    type="button"
                     className={`checkout-payment-option ${paymentMethod === 'cod' ? 'checkout-payment-option--active' : ''}`}
                     onClick={() => setPaymentMethod('cod')}
                   >
@@ -418,21 +415,75 @@ const Checkout: React.FC = () => {
                 </div>
               </div>
 
-              {/* UPI section */}
+              {/* ── UPI section ───────────────────────────────────────────── */}
               {paymentMethod === 'upi' && (
                 <div className="checkout-upi-section">
+
+                  {/* UPI Deep-link button */}
+                  <div className="upi-deeplink-card">
+                    <div className="upi-deeplink-header">
+                      <Smartphone size={18} />
+                      <span>Pay with UPI App</span>
+                    </div>
+                    <p className="upi-deeplink-desc">
+                      Tap the button below to open your UPI app and pay <strong>₹{totalPrice}</strong> instantly.
+                    </p>
+
+                    {/* UPI app badges */}
+                    <div className="upi-apps-row">
+                      {UPI_APPS.map(app => (
+                        <div key={app.name} className="upi-app-badge" style={{ borderColor: app.color + '44' }}>
+                          <span className="upi-app-emoji">{app.emoji}</span>
+                          <span className="upi-app-name">{app.name}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {isMobile ? (
+                      <a
+                        href={upiDeepLink}
+                        className="upi-open-btn"
+                        id="upi-open-app-btn"
+                        onClick={() => setTimeout(() => {}, 100)}
+                      >
+                        <Smartphone size={18} />
+                        Open UPI App · ₹{totalPrice}
+                        <ExternalLink size={14} />
+                      </a>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          className="upi-open-btn upi-open-btn--desktop"
+                          id="upi-open-app-btn-desktop"
+                          onClick={openUpiApp}
+                        >
+                          <Smartphone size={18} />
+                          Open UPI App · ₹{totalPrice}
+                          <ExternalLink size={14} />
+                        </button>
+                        <p className="upi-desktop-hint">
+                          💡 For best experience, scan the QR code below or open this page on your mobile to pay via UPI app.
+                        </p>
+                      </>
+                    )}
+                  </div>
+
+                  {/* QR Code */}
                   <div className="checkout-qr-wrap">
+                    <div className="checkout-qr-or-divider"><span>or scan QR code</span></div>
                     <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=krishnacreation@upi&am=${totalPrice}&tn=Order-${product.id}`}
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiDeepLink)}`}
                       alt="UPI QR Code"
                       className="checkout-qr-img"
                     />
                     <div className="checkout-upi-id">
-                      UPI ID: <strong>krishnacreation@upi</strong>
+                      UPI ID: <strong>{upiId}</strong>
                     </div>
                     <div className="checkout-upi-amount">Amount: ₹{totalPrice}</div>
                   </div>
 
+                  {/* Transaction reference */}
                   <div className="checkout-form-group">
                     <label className="checkout-label">UPI Transaction Reference ID</label>
                     <input
@@ -468,18 +519,14 @@ const Checkout: React.FC = () => {
                 </button>
                 <button
                   type="submit"
+                  id="place-order-btn"
                   className={`checkout-place-btn ${placing ? 'checkout-place-btn--disabled' : ''}`}
                   disabled={placing}
                 >
                   {placing ? (
-                    <>
-                      <Loader2 size={16} className="spin-icon" /> Placing Order...
-                    </>
+                    <><Loader2 size={16} className="spin-icon" /> Placing Order...</>
                   ) : (
-                    <>
-                      <Sparkles size={16} />
-                      Place Order · ₹{totalPrice}
-                    </>
+                    <><Sparkles size={16} /> Place Order · ₹{totalPrice}</>
                   )}
                 </button>
               </div>
@@ -491,15 +538,12 @@ const Checkout: React.FC = () => {
         {step === 3 && orderPlaced && (
           <div className="checkout-step-content checkout-animate-in">
             <div className="checkout-success-section">
-              <div className="checkout-success-icon">
-                <CheckCircle size={48} />
-              </div>
+              <div className="checkout-success-icon"><CheckCircle size={48} /></div>
               <h2 className="checkout-success-title">Order Placed Successfully!</h2>
               <p className="checkout-success-text">
                 Thank you, <strong>{name}</strong>! Your order has been placed.
               </p>
 
-              {/* Order details */}
               <div className="checkout-success-card">
                 <div className="checkout-success-row">
                   <span>Order</span>
@@ -509,6 +553,26 @@ const Checkout: React.FC = () => {
                   <span>Product</span>
                   <span className="checkout-success-val">{product.title}</span>
                 </div>
+                {selectedTheme && (
+                  <div className="checkout-success-row">
+                    <span>Theme</span>
+                    <span className="checkout-success-val">{selectedTheme}</span>
+                  </div>
+                )}
+                {selectedFrame && (
+                  <div className="checkout-success-row">
+                    <span>Frame</span>
+                    <span className="checkout-success-val">{selectedFrame}</span>
+                  </div>
+                )}
+                {selectedSize && (
+                  <div className="checkout-success-row">
+                    <span>Size</span>
+                    <span className="checkout-success-val">
+                      {selectedSize}{quantity > 1 ? ` × ${quantity}` : ''}
+                    </span>
+                  </div>
+                )}
                 <div className="checkout-success-row">
                   <span>Photos</span>
                   <span className="checkout-success-val">{imageCount}</span>
@@ -523,8 +587,7 @@ const Checkout: React.FC = () => {
                 </div>
                 <div className="checkout-success-divider" />
                 <div className="checkout-success-row checkout-success-total">
-                  <span>Total Paid</span>
-                  <span>₹{totalPrice}</span>
+                  <span>Total Paid</span><span>₹{totalPrice}</span>
                 </div>
               </div>
 
@@ -545,6 +608,8 @@ const Checkout: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Unavailable modal */}
       {showUnavailable && (
         <div className="unavailable-overlay" onClick={() => setShowUnavailable(false)}>
           <div className="unavailable-modal" onClick={e => e.stopPropagation()}>
@@ -559,8 +624,7 @@ const Checkout: React.FC = () => {
             </p>
             <div className="unavailable-actions">
               <a href={`tel:+${import.meta.env.VITE_CONTACT_NUMBER}`} className="unavailable-btn unavailable-btn--call">
-                <Phone size={16} />
-                Call Us
+                <Phone size={16} /> Call Us
               </a>
               <a
                 href={`https://wa.me/${import.meta.env.VITE_CONTACT_NUMBER}`}
@@ -568,8 +632,7 @@ const Checkout: React.FC = () => {
                 rel="noopener noreferrer"
                 className="unavailable-btn unavailable-btn--wa"
               >
-                <MessageCircle size={16} />
-                WhatsApp
+                <MessageCircle size={16} /> WhatsApp
               </a>
             </div>
             <p className="unavailable-thanks">Thank you for your understanding 🙏</p>

@@ -371,8 +371,8 @@ input[type="submit"] {
   text-align: center;
   padding: 2rem 1.5rem;
   max-width: 700px;
-  @media (max-width: 380px) {
-    bottom: 4rem;
+  @media (max-width: 576px) {
+    bottom: 3rem;
   }
 }
 
@@ -511,7 +511,7 @@ input[type="submit"] {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   z-index: 2;
-  @media (max-width: 380px) {
+  @media (max-width: 576px) {
     bottom: 7rem;
   }
 }
@@ -4848,4 +4848,724 @@ input[type="submit"] {
   color: rgba(255, 255, 255, 0.4);
   font-size: 0.85rem;
   margin: 0;
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════════
+   INTERACTIVE 3D MUG — CSS POLYGON CYLINDER
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Outer card container ─────────────────────────────────── */
+.mug3d-outer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.2rem 1rem 1rem;
+  border-radius: 22px;
+  background: linear-gradient(160deg, #08081a 0%, #0d0d24 100%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  animation: mugCardIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes mugCardIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Dot-grid ambient background */
+.mug3d-bg-dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 18px 18px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Top info bar ─────────────────────────────────────────── */
+.mug3d-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 300px;
+  z-index: 1;
+}
+
+.mug3d-drag-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.38);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mug3d-spec-badge {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.22);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ── 3D Viewport (perspective camera) ────────────────────── */
+.mug3d-viewport {
+  position: relative;
+  width: 300px;
+  height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 560px;
+  cursor: grab;
+  z-index: 1;
+  /* prevent scroll while dragging on touch */
+  touch-action: none;
+}
+
+.mug3d-viewport--grabbing {
+  cursor: grabbing;
+}
+
+/* ── Camera tilt wrapper (static 8° look-down for depth) ─── */
+.mug3d-tilt {
+  transform-style: preserve-3d;
+  transform: rotateX(8deg);
+}
+
+/* ── Y-rotating world (driven by JS rotateY) ─────────────── */
+.mug3d-world {
+  position: relative;
+  /* width = 2 × RADIUS = 2 × 90 = 180px */
+  width: 180px;
+  /* height = MUG_H = 200px */
+  height: 200px;
+  transform-style: preserve-3d;
+}
+
+/* ── Individual polygon face ──────────────────────────────── */
+.mug3d-face {
+  position: absolute;
+  top: 0;
+  /* left set inline: RADIUS - FACE_W/2 ≈ 75.7px */
+  background-color: #fafafa;
+  backface-visibility: visible;
+  /* thin border closes gaps between adjacent faces */
+  border-left:  0.4px solid rgba(190, 190, 190, 0.35);
+  border-right: 0.4px solid rgba(190, 190, 190, 0.35);
+}
+
+.mug3d-face--ceramic {
+  background-color: #f8f8f8;
+}
+
+/* ── Top rim cap ──────────────────────────────────────────── */
+/* width = height = 2 × RADIUS = 180px */
+/* top = −RADIUS = −90px  →  cap centre aligns with mug top */
+.mug3d-cap {
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  left: 0;
+  transform-style: preserve-3d;
+}
+
+.mug3d-cap--top {
+  top: -90px;                      /* −RADIUS */
+  background: radial-gradient(ellipse at 38% 32%,
+    #f5f5f5 0%, #e0e0e0 55%, #c8c8c8 100%);
+  transform: rotateX(90deg);
+  border: 1.5px solid rgba(0, 0, 0, 0.06);
+  z-index: 2;
+}
+
+/* Bottom base cap */
+/* top = MUG_H − RADIUS = 200 − 90 = 110px  →  cap centre = mug bottom */
+.mug3d-cap--bottom {
+  top: 110px;                      /* MUG_H − RADIUS */
+  background: radial-gradient(ellipse at 50% 60%,
+    #e2e2e2 0%, #c4c4c4 100%);
+  transform: rotateX(90deg);
+  z-index: 2;
+}
+
+/* ── Handle (overlay, opacity tracks rotation) ────────────── */
+.mug3d-handle {
+  position: absolute;
+  /* align with right edge of cylinder: centre at ~50% + RADIUS */
+  right: 25px;
+  top: calc(50% - 36px);          /* half of handle height */
+  width: 30px;
+  height: 72px;
+  border: 9px solid #f0f0f0;
+  border-left: none;
+  border-radius: 0 38px 38px 0;
+  box-shadow:
+    3px 1px 8px rgba(0, 0, 0, 0.22),
+    inset -1px 0 4px rgba(0, 0, 0, 0.08);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Ground shadow ellipse ────────────────────────────────── */
+.mug3d-shadow {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 145px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.38) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── No-photo hint ────────────────────────────────────────── */
+.mug3d-empty-hint {
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.25);
+  text-align: center;
+  margin: 0;
+  z-index: 1;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   PHOTO FRAME SELECTOR
+═══════════════════════════════════════════════════════════════ */
+
+.frame-styles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 380px) {
+  .frame-styles-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.frame-style-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+
+.frame-style-swatch {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.frame-style-card:hover .frame-style-swatch {
+  transform: scale(1.07);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.frame-style-card--selected .frame-style-swatch {
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.45), 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.frame-check {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(139, 92, 246, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.frame-style-name {
+  font-size: 0.63rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+
+.frame-style-card--selected .frame-style-name {
+  color: #c084fc;
+}
+
+/* ── Live Frame Preview ───────────────────────────────────────── */
+
+.frame-preview-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.frame-preview-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.frame-preview-box {
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 3 / 4;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: box-shadow 0.3s, border 0.3s;
+  animation: framePreviewIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes framePreviewIn {
+  from { opacity: 0; transform: scale(0.93); }
+  to   { opacity: 1; transform: none; }
+}
+
+.frame-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.frame-preview-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.frame-preview-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* change photo btn */
+.pdp-change-photo-btn {
+  margin-top: 0.4rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.pdp-change-photo-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   PHOTO PRINT SIZE SELECTOR
+═══════════════════════════════════════════════════════════════ */
+
+.print-size-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 380px) {
+  .print-size-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.print-size-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0.6rem 0.4rem;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.print-size-chip:hover {
+  border-color: rgba(59, 130, 246, 0.4);
+  background: rgba(59, 130, 246, 0.06);
+  transform: translateY(-2px);
+}
+
+.print-size-chip--selected {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.12);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+}
+
+.print-size-label {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #fff;
+  line-height: 1;
+}
+
+.print-size-chip--selected .print-size-label {
+  color: #bfdbfe;
+}
+
+.print-size-dims {
+  font-size: 0.55rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.01em;
+  text-align: center;
+}
+
+.print-size-chip--selected .print-size-dims {
+  color: rgba(147, 197, 253, 0.7);
+}
+
+.print-size-price {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #60a5fa;
+  margin-top: 2px;
+}
+
+/* ── Quantity stepper ─────────────────────────────────────────── */
+
+.print-quantity-section {
+  padding: 1rem 1.1rem;
+  border-radius: 16px;
+  background: rgba(59, 130, 246, 0.06);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+  animation: qtyIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes qtyIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.print-quantity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.print-quantity-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.print-total-badge {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.print-total-badge strong {
+  color: #60a5fa;
+  font-weight: 800;
+}
+
+.print-quantity-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  width: fit-content;
+}
+
+.qty-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.qty-btn:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+}
+
+.qty-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.qty-value {
+  min-width: 48px;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0 4px;
+  line-height: 42px;
+}
+
+.qty-hint {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   UPI DEEP-LINK PAYMENT
+═══════════════════════════════════════════════════════════════ */
+
+.upi-deeplink-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1.25rem;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.08));
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  margin-bottom: 0.5rem;
+  animation: upiCardIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes upiCardIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.upi-deeplink-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #a78bfa;
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.upi-deeplink-desc {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+  line-height: 1.55;
+}
+
+.upi-deeplink-desc strong {
+  color: #a78bfa;
+}
+
+/* UPI app badges row */
+.upi-apps-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.upi-app-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.upi-app-emoji {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.upi-app-name {
+  letter-spacing: 0.02em;
+}
+
+/* Open UPI App button */
+.upi-open-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 0.95rem 1.5rem;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.upi-open-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
+  pointer-events: none;
+}
+
+.upi-open-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(124, 58, 237, 0.55);
+  color: #fff;
+}
+
+.upi-open-btn:active {
+  transform: translateY(0);
+}
+
+.upi-open-btn--desktop {
+  background: linear-gradient(135deg, #6d28d9, #7c3aed);
+}
+
+.upi-desktop-hint {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0;
+  text-align: center;
+  line-height: 1.55;
+}
+
+/* QR Code divider */
+.checkout-qr-or-divider {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.checkout-qr-or-divider::before,
+.checkout-qr-or-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   CHECKOUT — CUSTOMISATION CARD
+═══════════════════════════════════════════════════════════════ */
+
+.checkout-custom-card {
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  background: rgba(249, 115, 22, 0.06);
+  border: 1px solid rgba(249, 115, 22, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.checkout-custom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.checkout-custom-row span:first-child {
+  font-weight: 600;
+}
+
+.checkout-custom-row span:last-child {
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 700;
+  text-align: right;
+}
+
+.checkout-price-small {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.35);
+  margin-left: 4px;
 }
