@@ -52,32 +52,47 @@ const VideoModal: React.FC<VideoModalProps> = ({ video, onClose, onPrev, onNext 
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
         background: 'rgba(0,0,0,0.92)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1rem',
       }}
     >
-      <div style={{ position: 'relative', width: '95vw', maxWidth: 900, aspectRatio: '16/9', background: '#000', borderRadius: 12, overflow: 'hidden', boxShadow: '0 25px 80px rgba(0,0,0,0.8)' }}>
+      <div style={{
+        position: 'relative',
+        width: '100%',
+        maxWidth: 900,
+        background: '#000',
+        borderRadius: 12,
+        overflow: 'hidden',
+        boxShadow: '0 25px 80px rgba(0,0,0,0.8)',
+        maxHeight: 'calc(100vh - 6rem)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
         {/* Close */}
-        <button
+        {/* <button
           onClick={onClose}
           style={{
             position: 'absolute', top: 12, right: 12, zIndex: 10,
-            background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%',
+            background: 'rgba(0,0,0,0.7)', border: 'none', borderRadius: '50%',
             width: 36, height: 36, cursor: 'pointer', color: '#fff',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            backdropFilter: 'blur(4px)',
           }}
           aria-label="Close"
         >
           <X size={18} />
-        </button>
+        </button> */}
 
         {/* Prev */}
-        {onPrev && (
+        {/* {onPrev && (
           <button
             onClick={onPrev}
             style={{
               position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', zIndex: 10,
-              background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%',
+              background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%',
               width: 40, height: 40, cursor: 'pointer', color: '#fff',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
@@ -85,15 +100,15 @@ const VideoModal: React.FC<VideoModalProps> = ({ video, onClose, onPrev, onNext 
           >
             <ChevronLeft size={22} />
           </button>
-        )}
+        )} */}
 
         {/* Next */}
-        {onNext && (
+        {/* {onNext && (
           <button
             onClick={onNext}
             style={{
               position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', zIndex: 10,
-              background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%',
+              background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%',
               width: 40, height: 40, cursor: 'pointer', color: '#fff',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
@@ -101,23 +116,40 @@ const VideoModal: React.FC<VideoModalProps> = ({ video, onClose, onPrev, onNext 
           >
             <ChevronRight size={22} />
           </button>
-        )}
+        )} */}
 
-        {/* Google Drive Player */}
-        <iframe
+        {/*
+          Native <video> instead of Google Drive iframe.
+          The Drive iframe injects its entire player UI (seek bar, settings,
+          Google chrome, black overlay) which can't be styled from outside.
+          streamUrl uses the Drive API v3 alt=media endpoint — same as Reels.
+        */}
+        <video
           key={video.id}
-          src={video.embedUrl}
-          title={video.caption}
-          allow="autoplay; fullscreen"
-          allowFullScreen
-          style={{ width: '100%', height: '100%', border: 'none' }}
+          src={video.streamUrl}
+          controls
+          autoPlay
+          playsInline
+          onClick={e => e.stopPropagation()}
+          style={{
+            width: '100%',
+            maxHeight: 'calc(100vh - 6rem)',
+            display: 'block',
+            objectFit: 'contain',
+            background: '#000',
+            borderRadius: 12,
+          }}
         />
       </div>
 
       {/* Caption */}
       <div style={{
-        position: 'fixed', bottom: 24, left: 0, right: 0, textAlign: 'center',
-        color: 'rgba(255,255,255,0.8)', fontSize: '0.95rem', pointerEvents: 'none',
+        marginTop: 12,
+        textAlign: 'center',
+        color: 'rgba(255,255,255,0.8)',
+        fontSize: '0.9rem',
+        pointerEvents: 'none',
+        maxWidth: 600,
       }}>
         {video.caption}
       </div>

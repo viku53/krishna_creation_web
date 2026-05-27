@@ -74,7 +74,7 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
    *             iframes bypass the hotlink block because they are top-level navigations
    *  'error'  — both failed, show error UI
    */
-  const [mode, setMode] = useState<'video' | 'iframe' | 'error'>('video');
+  const [mode, setMode] = useState<'video' | 'error'>('video');
 
   /**
    * muted must start true — ALL browsers block unmuted autoplay (policy).
@@ -84,7 +84,6 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
   const [userUnmuted, setUserUnmuted] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
   const touchStartY = useRef(0);
   const touchDelta = useRef(0);
   const swiped = useRef(false);
@@ -182,13 +181,13 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
     else if (touchDelta.current < -60) goPrev();
   };
 
-  // ── Video error handler — step down: video → iframe → error ───────────────
+  // ── Video error handler — go straight to error state ────────────────────
+  // We skip the iframe fallback entirely because the Google Drive /preview
+  // iframe injects its own player UI with a black overlay and doesn't center
+  // correctly inside a 9:16 portrait container (it's built for 16:9).
   const handleVideoError = useCallback(() => {
-    // uc?export=download got 403 (Google hotlink block) → fall back to iframe.
-    // The /preview iframe is a top-level navigation so it bypasses the block.
-    window.open("https://www.instagram.com/krishna_creation10/reels", "_self");
-    setMode('iframe');
-    setIsPlaying(true); // iframe manages its own playback
+    setMode('error');
+    setIsPlaying(false);
   }, []);
 
   return (
@@ -247,8 +246,12 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
-                background: '#000',
+                // Do NOT set background here — it causes a black overlay on iOS Safari
+                // when the video element is composited on its own GPU layer.
+                // The container (.reel-container) already has background:#000.
                 cursor: 'pointer',
+                WebkitBackfaceVisibility: 'hidden',
+                backfaceVisibility: 'hidden',
               }}
               onCanPlay={() => setIsPlaying(true)}
               onPlaying={() => setIsPlaying(true)}
@@ -259,35 +262,9 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
             />
           )}
 
-          {/* ── MODE: iframe fallback (Drive /preview) ──────────────────────
-           *  Used when uc?export=download returns 403 (hotlink protection).
-           *  Iframes are top-level navigations, so they bypass the block.
-           *  We clip the Drive control bar with overflow:hidden + extra height.
-           * ─────────────────────────────────────────────────────────────── */}
-          {mode === 'iframe' && (
-            <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-              <iframe
-                ref={iframeRef}
-                key={`iframe-${reel.id}`}
-                src={`${reel.embedUrl}?autoplay=1&rm=minimal`}
-                title={reel.caption}
-                allow="autoplay; fullscreen"
-                allowFullScreen
-                style={{
-                  border: 'none',
-                  width: '100%',
-                  height: 'calc(100% + 56px)', // clip Drive's bottom control bar
-                  display: 'block',
-                }}
-                onLoad={() => setIsPlaying(true)}
-              />
-              {/* Black strip that hides the Drive control bar */}
-              <div style={{
-                position: 'absolute', bottom: 0, left: 0, right: 0,
-                height: 56, background: '#000', pointerEvents: 'none',
-              }} />
-            </div>
-          )}
+          {/* iframe mode removed — Drive /preview iframe injects its own
+           *  player UI (black overlay + Google chrome) and doesn't center in
+           *  9:16 containers. We go straight to error state instead. */}
 
           {/* ── MODE: error ─────────────────────────────────────────────── */}
           {mode === 'error' && (

@@ -1527,6 +1527,10 @@ input[type="submit"] {
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
+  /* iOS Safari — prevent black layer flash when video starts */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  isolation: isolate;
 }
 
 .reel-video {
@@ -1536,6 +1540,12 @@ input[type="submit"] {
   display: block;
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
+  /* iOS Safari — prevent black compositing overlay during playback */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  isolation: isolate;
+  /* Ensure video renders on its own GPU layer cleanly */
+  will-change: transform;
 }
 
 /* ── Progress dots (top) ──────────────────────────────────── */
@@ -1572,18 +1582,29 @@ input[type="submit"] {
   height: 32px;
   border-radius: 50%;
   border: none;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.5);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  backdrop-filter: blur(6px);
+  /* Avoid backdrop-filter on mobile — it forces a compositing layer
+     that conflicts with the video element and causes black overlays on iOS */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   transition: background 0.2s;
 }
 
 .reel-mute-btn:hover {
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* Only apply backdrop-filter on desktop where compositing is stable */
+@media (hover: hover) and (pointer: fine) {
+  .reel-mute-btn {
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
 }
 
 /* ── Center play icon ─────────────────────────────────────── */
@@ -2097,9 +2118,18 @@ input[type="submit"] {
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(12px);
+  /* backdrop-filter disabled on mobile — causes iOS Safari to render video
+     elements as solid black when the filter is applied over a video element */
   padding: 1rem;
   animation: fadeIn 0.2s ease;
+}
+
+/* Only apply blur backdrop on desktop (non-touch) */
+@media (hover: hover) and (pointer: fine) {
+  .modal-backdrop {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
 }
 
 .modal-close {

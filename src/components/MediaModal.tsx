@@ -59,7 +59,14 @@ const MediaModal: React.FC<MediaModalProps> = ({ open, src, type, onClose, onPre
         {type === 'image' ? (
           <img src={src} alt={caption || 'Photo'} />
         ) : (
-          <video src={src} controls autoPlay />
+          <video
+            src={src}
+            controls
+            autoPlay
+            playsInline
+            onClick={e => e.stopPropagation()}
+            style={{ WebkitBackfaceVisibility: 'hidden', backfaceVisibility: 'hidden' }}
+          />
         )}
         {caption && <div className="modal-caption">{caption}</div>}
       </div>
