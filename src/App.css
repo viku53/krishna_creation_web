@@ -1428,7 +1428,7 @@ input[type="submit"] {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0);
   transition: background 0.3s;
 }
 
@@ -1445,11 +1445,13 @@ input[type="submit"] {
   align-items: center;
   justify-content: center;
   box-shadow: 0 8px 24px rgba(244, 63, 94, 0.5);
-  transition: transform 0.25s;
+  transition: transform 0.25s, opacity 0.3s;
+  opacity: 0;
 }
 
 .video-card:hover .video-play-btn {
   transform: scale(1.1);
+  opacity: 1;
 }
 
 .video-duration {
