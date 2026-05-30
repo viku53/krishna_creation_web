@@ -10,7 +10,17 @@
   color: inherit;
   cursor: default;
 }
-
+.text-align-center {
+  text-align: center  ;
+  justify-content: center;
+  /* align-items: center; */
+}
+.ml-1 {
+  margin-left: 0.25rem;
+}
+.inline {
+  display: inline;
+}
 /* section {
   display: none !important;
 } */
@@ -2737,8 +2747,8 @@ input[type="submit"] {
 
 @media (min-width: 640px) {
   .plp-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
   }
 }
 
@@ -2947,6 +2957,10 @@ input[type="submit"] {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  height: 75vh;
+  @media (max-width: 640px) {
+    height: auto;
+  }
 }
 
 .pdp-emoji {
@@ -5600,4 +5614,649 @@ input[type="submit"] {
   font-weight: 500;
   color: rgba(255, 255, 255, 0.35);
   margin-left: 4px;
+}
+/* ═══════════════════════════════════════════════════════════════════════════════
+   MUG THEME SELECTOR
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.mug-theme-section {
+  margin-bottom: 1.5rem;
+}
+
+.mug-theme-intro {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.mug-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.mug-theme-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.3rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-align: center;
+  overflow: hidden;
+}
+
+.mug-theme-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.mug-theme-card--selected {
+  border-color: #a78bfa;
+  background: rgba(167, 139, 250, 0.12);
+  color: #a78bfa;
+}
+
+.mug-theme-card--none .mug-theme-none-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.mug-theme-img {
+  width: 100%;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.mug-theme-name {
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 0 2px;
+}
+
+.mug-theme-check {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #a78bfa;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mug-theme-selected-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(167, 139, 250, 0.1);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  border-radius: 12px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+}
+
+.mug-theme-selected-hint svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #a78bfa;
+}
+
+/* 3D mug hint for theme mode */
+.mug3d-theme-hint {
+  color: #a78bfa !important;
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   CHECKOUT – OFFLINE PAYMENT NOTE
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.checkout-offline-payment-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.08), rgba(16, 185, 129, 0.08));
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 14px;
+  margin-bottom: 1rem;
+}
+
+.checkout-offline-payment-note svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #22c55e;
+}
+
+.checkout-offline-payment-note strong {
+  display: block;
+  font-size: 0.9rem;
+  color: #22c55e;
+  margin-bottom: 0.25rem;
+}
+
+.checkout-offline-payment-note p {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.checkout-payment-collected-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.06));
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 14px;
+  margin: 1.25rem 0;
+  text-align: left;
+}
+
+.checkout-payment-collected-note svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #22c55e;
+}
+
+.checkout-payment-collected-note strong {
+  display: block;
+  font-size: 0.9rem;
+  color: #22c55e;
+  margin-bottom: 0.3rem;
+}
+
+.checkout-payment-collected-note p {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* Order ID on confirmation */
+.checkout-order-id {
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  color: #a78bfa;
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   TRACK ORDER PAGE
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.track-page {
+  min-height: 100vh;
+  padding: 0 0 6rem;
+  background: linear-gradient(160deg, #0a0a1a 0%, #0f0f2e 50%, #0a0a1a 100%);
+}
+
+/* Hero */
+.track-hero {
+  text-align: center;
+  padding: 3rem 1.5rem 1.5rem;
+}
+
+.track-hero-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.2), rgba(99, 102, 241, 0.2));
+  border: 1.5px solid rgba(167, 139, 250, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+  color: #a78bfa;
+}
+
+.track-hero-title {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.5rem;
+}
+
+.track-hero-sub {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.55);
+  max-width: 320px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+/* Search */
+.track-search-wrap {
+  padding: 1rem 1.25rem 0;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.track-search-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.track-search-input {
+  flex: 1;
+  padding: 0.7rem 1rem;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 0.92rem;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.04em;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.track-search-input:focus {
+  border-color: #a78bfa;
+  background: rgba(167, 139, 250, 0.06);
+}
+
+.track-search-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+
+.track-search-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.7rem 1.1rem;
+  background: linear-gradient(135deg, #a78bfa, #6366f1);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+
+.track-search-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+.track-search-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.track-not-found {
+  margin-top: 0.8rem;
+  padding: 0.65rem 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 10px;
+  font-size: 0.82rem;
+  color: #fca5a5;
+  text-align: center;
+}
+
+/* Result card */
+.track-result-card {
+  max-width: 480px;
+  margin: 1.5rem auto 0;
+  padding: 0 1.25rem;
+}
+
+.track-result-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding: 1rem 1.1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+}
+
+.track-result-label {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.track-result-id {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #a78bfa;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.04em;
+}
+
+.track-result-status-badge {
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.track-product-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+}
+
+.track-product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.track-product-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.track-product-theme {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.track-product-amount {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #a78bfa;
+}
+
+/* Timeline */
+.track-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+}
+
+.track-stage {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.track-stage-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.track-stage-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.track-stage--done .track-stage-icon {
+  border-color: transparent;
+  color: #fff;
+}
+
+.track-stage-connector {
+  width: 2px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 4px 0;
+  border-radius: 2px;
+  flex-shrink: 0;
+  transition: background 0.3s ease;
+}
+
+.track-stage-connector--done {
+  background: linear-gradient(to bottom, #22c55e, rgba(34, 197, 94, 0.3));
+}
+
+.track-stage-body {
+  padding: 0.5rem 0 1.2rem;
+  flex: 1;
+}
+
+.track-stage--current .track-stage-body {
+  padding-bottom: 1rem;
+}
+
+.track-stage-label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 0.15rem;
+  transition: color 0.3s;
+}
+
+.track-stage--done .track-stage-label {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.track-stage-desc {
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.3);
+  line-height: 1.4;
+}
+
+.track-stage--done .track-stage-desc {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.track-stage-current-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 0.4rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(167, 139, 250, 0.15);
+  color: #a78bfa;
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  animation: pulseChip 1.8s ease-in-out infinite;
+}
+
+@keyframes pulseChip {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
+}
+
+.track-result-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.35);
+  padding: 0.75rem 1.1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  margin-bottom: 0.8rem;
+}
+
+.track-payment-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(34, 197, 94, 0.06);
+  border: 1px solid rgba(34, 197, 94, 0.18);
+  border-radius: 10px;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.5;
+}
+
+.track-payment-note svg { color: #22c55e; flex-shrink: 0; margin-top: 1px; }
+.track-payment-note a { color: #22c55e; text-decoration: none; }
+
+/* Back row */
+.track-back-row {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding: 0 1.25rem;
+}
+
+.track-back-link {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.track-back-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Admin panel */
+.track-admin-panel {
+  max-width: 480px;
+  margin: 2rem auto 0;
+  padding: 1.25rem;
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 16px;
+  margin-left: 1.25rem;
+  margin-right: 1.25rem;
+}
+
+.track-admin-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: #fca5a5;
+}
+
+.track-admin-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fca5a5;
+}
+
+.track-admin-note {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 1rem;
+}
+
+.track-admin-note code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+}
+
+.track-admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.track-admin-select {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 0.9rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.track-admin-select option { background: #1a1a2e; }
+
+.track-admin-msg {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   INSTANT PRINTING – TRACK ORDER BUTTON
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.plp-track-order-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding: 0.6rem 1.25rem;
+  background: rgba(167, 139, 250, 0.1);
+  border: 1.5px solid rgba(167, 139, 250, 0.3);
+  border-radius: 30px;
+  color: #a78bfa;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.plp-track-order-btn:hover {
+  background: rgba(167, 139, 250, 0.18);
+  border-color: rgba(167, 139, 250, 0.5);
+  transform: translateY(-1px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   CHECKOUT SUCCESS – TRACK BUTTON
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.checkout-success-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  min-width: 160px;
 }

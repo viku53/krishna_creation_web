@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft,
   ShoppingBag,
   User,
   MapPin,
-  CreditCard,
   CheckCircle,
   Image as ImageIcon,
   Phone,
@@ -19,35 +18,35 @@ import {
   Loader2,
   MessageCircle,
   X,
-  Smartphone,
-  ExternalLink,
+  PackageCheck,
+  Search,
 } from 'lucide-react';
 import type { PrintProduct } from './InstantPrinting';
 import { sendOrderNotification, ENABLE_NOTIFICATIONS } from './sendNotification';
+import { uploadOrderToDrive } from './uploadToDrive';
 
-// ─── Step definitions ─────────────────────────────────────────────────────────
+// ── Steps ─────────────────────────────────────────────────────────────────────
 const STEPS = [
-  { key: 'review',  label: 'Review',  icon: <ShoppingBag size={16} /> },
+  { key: 'review', label: 'Review', icon: <ShoppingBag size={16} /> },
   { key: 'details', label: 'Details', icon: <User size={16} /> },
-  { key: 'payment', label: 'Payment', icon: <CreditCard size={16} /> },
-  { key: 'confirm', label: 'Done',    icon: <CheckCircle size={16} /> },
+  { key: 'done', label: 'Done', icon: <CheckCircle size={16} /> },
 ];
 
-// ─── UPI App icons (text-based badges) ────────────────────────────────────────
-const UPI_APPS = [
-  { name: 'GPay',     emoji: '🟢', color: '#1a73e8' },
-  { name: 'PhonePe',  emoji: '🟣', color: '#5f259f' },
-  { name: 'Paytm',    emoji: '🔵', color: '#00b9f1' },
-  { name: 'BHIM',     emoji: '🟠', color: '#ff6600' },
-];
+// ── Order-ID generator ────────────────────────────────────────────────────────
+function genOrderId(): string {
+  const ts = Date.now().toString(36).toUpperCase();
+  const rnd = Math.random().toString(36).slice(2, 5).toUpperCase();
+  return `KC-${ts.slice(-4)}${rnd}`;
+}
 
+// ═══════════════════════════════════════════════════════════════════════════════
 const Checkout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // ─── Extended state from PDP ───────────────────────────────────────────────
   const state = location.state as {
     product?: PrintProduct;
+    images?: File[];
     imageCount?: number;
     previewUrls?: string[];
     selectedTheme?: string;
@@ -58,107 +57,132 @@ const Checkout: React.FC = () => {
     customPrice?: number;
   } | null;
 
-  const product        = state?.product;
-  const imageCount     = state?.imageCount     ?? 0;
-  const previewUrls    = state?.previewUrls    ?? [];
-  const selectedTheme  = state?.selectedTheme;
-  const selectedFrame  = state?.selectedFrame;
-  const selectedSize   = state?.selectedSize;
+  const product = state?.product;
+  const imageFiles = state?.images ?? [];
+  const imageCount = state?.imageCount ?? 0;
+  const previewUrls = state?.previewUrls ?? [];
+  const selectedTheme = state?.selectedTheme;
+  const selectedFrame = state?.selectedFrame;
+  const selectedSize = state?.selectedSize;
   const selectedSizeDims = state?.selectedSizeDims;
-  const quantity       = state?.quantity       ?? 1;
-  const customPrice    = state?.customPrice;
+  const quantity = state?.quantity ?? 1;
+  const customPrice = state?.customPrice;
 
-  // ─── Form state ────────────────────────────────────────────────────────────
-  const [step,          setStep]          = useState(0);
-  const [name,          setName]          = useState('');
-  const [email,         setEmail]         = useState('');
-  const [phone,         setPhone]         = useState('');
-  const [address,       setAddress]       = useState('');
-  const [city,          setCity]          = useState('');
-  const [pincode,       setPincode]       = useState('');
-  const [notes,         setNotes]         = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'cod'>('upi');
-  const [upiRef,        setUpiRef]        = useState('');
-  const [orderPlaced,   setOrderPlaced]   = useState(false);
-  const [placing,       setPlacing]       = useState(false);
-  const [orderId]                         = useState(() => Date.now().toString(36).toUpperCase());
+  // ── Form state ─────────────────────────────────────────────────────────────
+  const [step, setStep] = useState(0);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [pincode, setPincode] = useState('');
+  const [notes, setNotes] = useState('');
+
+  const [placing, setPlacing] = useState(false);
+  const [orderId] = useState(genOrderId);
   const [showUnavailable, setShowUnavailable] = useState(false);
 
-  // ─── Price calculation ─────────────────────────────────────────────────────
-  const basePrice   = customPrice ?? (product ? parseInt(product.price.replace(/[^\d]/g, '')) : 499);
+  // ── Prevent refresh on Place Order step ────────────────────────────────────
+  useEffect(() => {
+    // Only block refresh when user is on the details/place-order step (step 1)
+    // or while the order is actively being submitted
+    const shouldBlock = step === 1 || placing;
+    if (!shouldBlock) return;
+
+    // Block browser reload / tab close
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = 'Your order details will be lost if you leave. Are you sure?';
+      return e.returnValue;
+    };
+
+    // Block F5 / Ctrl+R / Cmd+R keyboard shortcuts
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isRefreshKey =
+        e.key === 'F5' ||
+        ((e.ctrlKey || e.metaKey) && e.key === 'r') ||
+        ((e.ctrlKey || e.metaKey) && e.key === 'R');
+      if (isRefreshKey) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('keydown', handleKeyDown, true);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('keydown', handleKeyDown, true);
+    };
+  }, [step, placing]);
+
+  // ── Price ──────────────────────────────────────────────────────────────────
+  const basePrice = customPrice ?? (product ? parseInt(product.price.replace(/[^\d]/g, '')) : 499);
   const deliveryFee = basePrice >= 999 ? 0 : 49;
-  const totalPrice  = basePrice + deliveryFee;
+  const totalPrice = basePrice + deliveryFee;
 
-  // ─── UPI Deep-link ─────────────────────────────────────────────────────────
-  const upiId      = 'krishnacreation@upi';
-  const upiDeepLink = `upi://pay?pa=${upiId}&pn=KrishnaCreation&am=${totalPrice}&tn=Order-${orderId}&cu=INR`;
-  const isMobile    = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-  const openUpiApp = () => {
-    window.location.href = upiDeepLink;
-  };
-
-  // ─── Step handlers ─────────────────────────────────────────────────────────
+  // ── Step helpers ───────────────────────────────────────────────────────────
   const goNext = () => setStep(s => Math.min(s + 1, STEPS.length - 1));
   const goBack = () => setStep(s => Math.max(s - 1, 0));
 
+  // ── Place order ────────────────────────────────────────────────────────────
   const handlePlaceOrder = async () => {
     if (!product) return;
-
-    if (!ENABLE_NOTIFICATIONS) {
-      setShowUnavailable(true);
-      return;
-    }
-
     setPlacing(true);
 
-    const extraNotes = [
-      selectedTheme  ? `Theme: ${selectedTheme}`              : '',
-      selectedFrame  ? `Frame: ${selectedFrame}`              : '',
-      selectedSize   ? `Size: ${selectedSize}${selectedSizeDims ? ` (${selectedSizeDims})` : ''}` : '',
-      quantity > 1   ? `Quantity: ${quantity}`                : '',
-      notes          ? `Notes: ${notes}`                      : '',
-    ].filter(Boolean).join(' | ');
+    try {
+      // 1. Upload images to Google Drive (non-blocking, best-effort)
+      await uploadOrderToDrive({
+        orderId,
+        clientName: name,
+        phone,
+        email,
+        product: product.title,
+        theme: selectedTheme,
+        address: `${address}, ${city} - ${pincode}`,
+        notes,
+        amount: totalPrice.toString(),
+        images: imageFiles,
+      });
 
-    await sendOrderNotification({
-      orderId,
-      customerName:  name,
-      customerEmail: email,
-      customerPhone: phone,
-      address,
-      city,
-      pincode,
-      productName:   product.title,
-      productPrice:  product.price,
-      totalAmount:   totalPrice.toString(),
-      imageCount,
-      paymentMethod,
-      upiRef,
-      notes: extraNotes,
-    });
+      // 2. Send EmailJS notification (if configured)
+      if (ENABLE_NOTIFICATIONS) {
+        const extraNotes = [
+          selectedTheme ? `Theme: ${selectedTheme}` : '',
+          selectedFrame ? `Frame: ${selectedFrame}` : '',
+          selectedSize ? `Size: ${selectedSize}${selectedSizeDims ? ` (${selectedSizeDims})` : ''}` : '',
+          quantity > 1 ? `Qty: ${quantity}` : '',
+          notes ? `Notes: ${notes}` : '',
+        ].filter(Boolean).join(' | ');
+
+        await sendOrderNotification({
+          orderId,
+          customerName: name,
+          customerEmail: email,
+          customerPhone: phone,
+          address,
+          city,
+          pincode,
+          productName: product.title,
+          productPrice: product.price,
+          totalAmount: totalPrice.toString(),
+          imageCount,
+          notes: extraNotes,
+        });
+      }
+    } catch (err) {
+      console.error('Order placement error (non-fatal):', err);
+    }
 
     setPlacing(false);
-    setOrderPlaced(true);
-    setStep(3);
+    setStep(2); // Done step
   };
 
-  // ─── Customisation summary helper ─────────────────────────────────────────
   const hasCustomisation = selectedTheme || selectedFrame || selectedSize;
 
-  // ─── No product fallback ──────────────────────────────────────────────────
   if (!product) {
-    return (
-      <div className="checkout-page">
-        <div className="checkout-empty">
-          <div className="checkout-empty-icon"><ShoppingBag size={48} /></div>
-          <h2>Your cart is empty</h2>
-          <p>Browse our products and add items to your cart.</p>
-          <Link to="/instant-printing" className="checkout-empty-btn">
-            <ShoppingBag size={16} /> Browse Products
-          </Link>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (
@@ -168,7 +192,7 @@ const Checkout: React.FC = () => {
         <button onClick={() => navigate(-1)} className="checkout-back-btn">
           <ArrowLeft size={18} /><span>Back</span>
         </button>
-        <span className="checkout-topbar-title">Checkout</span>
+        <span className="checkout-topbar-title">Place Order</span>
         <div style={{ width: 80 }} />
       </div>
 
@@ -189,7 +213,6 @@ const Checkout: React.FC = () => {
         ))}
       </div>
 
-      {/* ── Step content ─────────────────────────────────────────────── */}
       <div className="checkout-content">
 
         {/* ═══ STEP 0: ORDER REVIEW ═══ */}
@@ -214,7 +237,7 @@ const Checkout: React.FC = () => {
               </div>
             </div>
 
-            {/* Customisation details */}
+            {/* Customisation */}
             {hasCustomisation && (
               <div className="checkout-custom-card">
                 <div className="checkout-mini-heading">✨ Customisation Details</div>
@@ -242,7 +265,7 @@ const Checkout: React.FC = () => {
               </div>
             )}
 
-            {/* Uploaded previews */}
+            {/* Photo previews */}
             {previewUrls.length > 0 && (
               <div className="checkout-preview-section">
                 <div className="checkout-mini-heading">Your Uploaded Photos</div>
@@ -262,7 +285,9 @@ const Checkout: React.FC = () => {
               <div className="checkout-price-row">
                 <span>
                   Product Price
-                  {quantity > 1 && selectedSize && <span className="checkout-price-small"> ({quantity} × ₹{basePrice / quantity})</span>}
+                  {quantity > 1 && selectedSize && (
+                    <span className="checkout-price-small"> ({quantity} × ₹{basePrice / quantity})</span>
+                  )}
                 </span>
                 <span>₹{basePrice}</span>
               </div>
@@ -275,6 +300,14 @@ const Checkout: React.FC = () => {
               <div className="checkout-price-divider" />
               <div className="checkout-price-row checkout-price-total">
                 <span>Total</span><span>₹{totalPrice}</span>
+              </div>
+            </div>
+
+            {/* Payment handled by Nikunj note */}
+            <div className="checkout-offline-payment-note text-align-center">
+              <div>
+                <p className='flex text-align-center'><Shield size={16} /><strong className='ml-1'>Custom Crafted With Care</strong></p>
+                <p>To ensure the finest quality for your custom prints, we begin the production process as soon as payment is confirmed. Simple payment instructions will be shared with you immediately after placing your order! ✨</p>
               </div>
             </div>
 
@@ -291,16 +324,19 @@ const Checkout: React.FC = () => {
           </div>
         )}
 
-        {/* ═══ STEP 1: SHIPPING DETAILS ═══ */}
+        {/* ═══ STEP 1: SHIPPING DETAILS + PLACE ORDER ═══ */}
         {step === 1 && (
           <div className="checkout-step-content checkout-animate-in">
-            <div className="checkout-section-title"><MapPin size={18} /> Shipping Details</div>
+            <div className="checkout-section-title"><MapPin size={18} /> Your Details</div>
 
-            <form onSubmit={e => { e.preventDefault(); goNext(); }} className="checkout-form">
+            <form
+              onSubmit={e => { e.preventDefault(); handlePlaceOrder(); }}
+              className="checkout-form"
+            >
               <div className="checkout-form-row">
                 <div className="checkout-form-group">
                   <label className="checkout-label"><User size={14} /> Full Name</label>
-                  <input type="text" placeholder="John Doe" value={name}
+                  <input type="text" placeholder="Your full name" value={name}
                     onChange={e => setName(e.target.value)} className="checkout-input"
                     minLength={2} required />
                 </div>
@@ -308,13 +344,14 @@ const Checkout: React.FC = () => {
                   <label className="checkout-label"><Phone size={14} /> Phone Number</label>
                   <input type="tel" placeholder="+91 98765 43210" value={phone}
                     onChange={e => setPhone(e.target.value)} className="checkout-input"
-                    pattern="^[0-9+\-\s()]{10,15}$" title="Please enter a valid phone number (10-15 digits)" required />
+                    pattern="^[0-9+\-\s()]{10,15}$"
+                    title="Please enter a valid phone number (10-15 digits)" required />
                 </div>
               </div>
 
               <div className="checkout-form-group">
                 <label className="checkout-label"><Mail size={14} /> Email Address</label>
-                <input type="email" placeholder="john@example.com" value={email}
+                <input type="email" placeholder="you@example.com" value={email}
                   onChange={e => setEmail(e.target.value)} className="checkout-input"
                   pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$"
                   title="Please enter a valid email address" required />
@@ -345,173 +382,27 @@ const Checkout: React.FC = () => {
 
               <div className="checkout-form-group">
                 <label className="checkout-label">Order Notes (optional)</label>
-                <textarea placeholder="Any special instructions..." value={notes}
+                <textarea placeholder="Any special instructions, size, or colour preferences..." value={notes}
                   onChange={e => setNotes(e.target.value)} className="checkout-textarea" rows={2} />
               </div>
 
-              <div className="checkout-btn-row">
-                <button type="button" className="checkout-back-step-btn" onClick={goBack}>
-                  <ArrowLeft size={16} /> Back
-                </button>
-                <button type="submit" className="checkout-next-btn">
-                  Continue to Payment <ChevronRight size={18} />
-                </button>
+              {/* Total mini-summary */}
+              <div className="checkout-order-mini" style={{ marginTop: '1rem' }}>
+                <div className="checkout-order-mini-left">
+                  <div className="checkout-order-mini-emoji" style={{ background: product.gradient }}>
+                    {product.emoji}
+                  </div>
+                  <div>
+                    <div className="checkout-order-mini-name">{product.title}</div>
+                    <div className="checkout-order-mini-meta">
+                      {imageCount} photo{imageCount !== 1 ? 's' : ''}
+                      {selectedTheme ? ` · ${selectedTheme}` : ''}
+                      {selectedSize ? ` · ${selectedSize}` : ''}
+                    </div>
+                  </div>
+                </div>
+                <div className="checkout-order-mini-price">₹{totalPrice}</div>
               </div>
-            </form>
-          </div>
-        )}
-
-        {/* ═══ STEP 2: PAYMENT ═══ */}
-        {step === 2 && (
-          <div className="checkout-step-content checkout-animate-in">
-            <div className="checkout-section-title"><CreditCard size={18} /> Payment</div>
-
-            {/* Order mini summary */}
-            <div className="checkout-order-mini">
-              <div className="checkout-order-mini-left">
-                <div className="checkout-order-mini-emoji" style={{ background: product.gradient }}>
-                  {product.emoji}
-                </div>
-                <div>
-                  <div className="checkout-order-mini-name">{product.title}</div>
-                  <div className="checkout-order-mini-meta">
-                    {imageCount} photo{imageCount !== 1 ? 's' : ''}
-                    {selectedSize ? ` · ${selectedSize}` : ''}
-                    {quantity > 1 ? ` × ${quantity}` : ''}
-                    {city ? ` · Ships to ${city}` : ''}
-                  </div>
-                </div>
-              </div>
-              <div className="checkout-order-mini-price">₹{totalPrice}</div>
-            </div>
-
-            <form onSubmit={e => { e.preventDefault(); handlePlaceOrder(); }}>
-              {/* Payment method chooser */}
-              <div className="checkout-payment-methods">
-                <div className="checkout-mini-heading">Choose Payment Method</div>
-                <div className="checkout-payment-options">
-                  <button
-                    type="button"
-                    className={`checkout-payment-option ${paymentMethod === 'upi' ? 'checkout-payment-option--active' : ''}`}
-                    onClick={() => setPaymentMethod('upi')}
-                  >
-                    <div className="checkout-payment-icon">💳</div>
-                    <div>
-                      <div className="checkout-payment-title">UPI / QR Code</div>
-                      <div className="checkout-payment-desc">Pay via Google Pay, PhonePe, Paytm etc.</div>
-                    </div>
-                  </button>
-                  <button
-                    type="button"
-                    className={`checkout-payment-option ${paymentMethod === 'cod' ? 'checkout-payment-option--active' : ''}`}
-                    onClick={() => setPaymentMethod('cod')}
-                  >
-                    <div className="checkout-payment-icon">🏠</div>
-                    <div>
-                      <div className="checkout-payment-title">Cash on Delivery</div>
-                      <div className="checkout-payment-desc">Pay when you receive</div>
-                    </div>
-                  </button>
-                </div>
-              </div>
-
-              {/* ── UPI section ───────────────────────────────────────────── */}
-              {paymentMethod === 'upi' && (
-                <div className="checkout-upi-section">
-
-                  {/* UPI Deep-link button */}
-                  <div className="upi-deeplink-card">
-                    <div className="upi-deeplink-header">
-                      <Smartphone size={18} />
-                      <span>Pay with UPI App</span>
-                    </div>
-                    <p className="upi-deeplink-desc">
-                      Tap the button below to open your UPI app and pay <strong>₹{totalPrice}</strong> instantly.
-                    </p>
-
-                    {/* UPI app badges */}
-                    <div className="upi-apps-row">
-                      {UPI_APPS.map(app => (
-                        <div key={app.name} className="upi-app-badge" style={{ borderColor: app.color + '44' }}>
-                          <span className="upi-app-emoji">{app.emoji}</span>
-                          <span className="upi-app-name">{app.name}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {isMobile ? (
-                      <a
-                        href={upiDeepLink}
-                        className="upi-open-btn"
-                        id="upi-open-app-btn"
-                        onClick={() => setTimeout(() => {}, 100)}
-                      >
-                        <Smartphone size={18} />
-                        Open UPI App · ₹{totalPrice}
-                        <ExternalLink size={14} />
-                      </a>
-                    ) : (
-                      <>
-                        <button
-                          type="button"
-                          className="upi-open-btn upi-open-btn--desktop"
-                          id="upi-open-app-btn-desktop"
-                          onClick={openUpiApp}
-                        >
-                          <Smartphone size={18} />
-                          Open UPI App · ₹{totalPrice}
-                          <ExternalLink size={14} />
-                        </button>
-                        <p className="upi-desktop-hint">
-                          💡 For best experience, scan the QR code below or open this page on your mobile to pay via UPI app.
-                        </p>
-                      </>
-                    )}
-                  </div>
-
-                  {/* QR Code */}
-                  <div className="checkout-qr-wrap">
-                    <div className="checkout-qr-or-divider"><span>or scan QR code</span></div>
-                    <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiDeepLink)}`}
-                      alt="UPI QR Code"
-                      className="checkout-qr-img"
-                    />
-                    <div className="checkout-upi-id">
-                      UPI ID: <strong>{upiId}</strong>
-                    </div>
-                    <div className="checkout-upi-amount">Amount: ₹{totalPrice}</div>
-                  </div>
-
-                  {/* Transaction reference */}
-                  <div className="checkout-form-group">
-                    <label className="checkout-label">UPI Transaction Reference ID</label>
-                    <input
-                      type="text"
-                      placeholder="Enter 12-digit UPI reference number"
-                      value={upiRef}
-                      onChange={e => setUpiRef(e.target.value)}
-                      className="checkout-input"
-                      required={paymentMethod === 'upi'}
-                      pattern="^[0-9]{12}$"
-                      title="UPI reference must be a 12-digit number"
-                      maxLength={12}
-                    />
-                    <p className="checkout-input-hint">Enter the reference number after completing payment</p>
-                  </div>
-                </div>
-              )}
-
-              {/* COD info */}
-              {paymentMethod === 'cod' && (
-                <div className="checkout-cod-info">
-                  <div className="checkout-cod-icon">🏠</div>
-                  <p>Pay <strong>₹{totalPrice}</strong> when the product is delivered to your doorstep.</p>
-                  <div className="checkout-cod-note">
-                    Note: Cash on Delivery is available for orders within India.
-                  </div>
-                </div>
-              )}
 
               <div className="checkout-btn-row">
                 <button type="button" className="checkout-back-step-btn" onClick={goBack}>
@@ -523,31 +414,32 @@ const Checkout: React.FC = () => {
                   className={`checkout-place-btn ${placing ? 'checkout-place-btn--disabled' : ''}`}
                   disabled={placing}
                 >
-                  {placing ? (
-                    <><Loader2 size={16} className="spin-icon" /> Placing Order...</>
-                  ) : (
-                    <><Sparkles size={16} /> Place Order · ₹{totalPrice}</>
-                  )}
+                  {placing
+                    ? <><Loader2 size={16} className="spin-icon" /> Placing Order…</>
+                    : <><Sparkles size={16} /> Place Order · ₹{totalPrice}</>
+                  }
                 </button>
               </div>
             </form>
           </div>
         )}
 
-        {/* ═══ STEP 3: CONFIRMATION ═══ */}
-        {step === 3 && orderPlaced && (
+        {/* ═══ STEP 2: CONFIRMATION ═══ */}
+        {step === 2 && (
           <div className="checkout-step-content checkout-animate-in">
             <div className="checkout-success-section">
-              <div className="checkout-success-icon"><CheckCircle size={48} /></div>
-              <h2 className="checkout-success-title">Order Placed Successfully!</h2>
+              {/* Animated checkmark */}
+              <div className="checkout-success-icon"><CheckCircle size={56} /></div>
+              <h2 className="checkout-success-title">Order Placed! 🎉</h2>
               <p className="checkout-success-text">
-                Thank you, <strong>{name}</strong>! Your order has been placed.
+                Thank you, <strong>{name}</strong>! Your order has been received.
               </p>
 
+              {/* Order card */}
               <div className="checkout-success-card">
                 <div className="checkout-success-row">
-                  <span>Order</span>
-                  <span className="checkout-success-val">#{orderId}</span>
+                  <span>Order Number</span>
+                  <span className="checkout-success-val checkout-order-id">#{orderId}</span>
                 </div>
                 <div className="checkout-success-row">
                   <span>Product</span>
@@ -578,27 +470,40 @@ const Checkout: React.FC = () => {
                   <span className="checkout-success-val">{imageCount}</span>
                 </div>
                 <div className="checkout-success-row">
-                  <span>Delivery</span>
-                  <span className="checkout-success-val">{address}, {city} - {pincode}</span>
-                </div>
-                <div className="checkout-success-row">
-                  <span>Payment</span>
-                  <span className="checkout-success-val">{paymentMethod === 'upi' ? 'UPI' : 'Cash on Delivery'}</span>
+                  <span>Delivery To</span>
+                  <span className="checkout-success-val">{address}, {city} – {pincode}</span>
                 </div>
                 <div className="checkout-success-divider" />
                 <div className="checkout-success-row checkout-success-total">
-                  <span>Total Paid</span><span>₹{totalPrice}</span>
+                  <span>Amount Due</span><span>₹{totalPrice}</span>
                 </div>
               </div>
 
+              {/* Payment collection note */}
+              <div className="checkout-payment-collected-note">
+                <PackageCheck size={20} />
+                <div>
+                  <strong>Let's Get Started! ✨</strong>
+                  <p>
+                    We will begin crafting your beautiful custom prints as soon as your payment is received. We'll reach out to you shortly on <strong className='inline'>{phone}</strong> with the details to complete your payment!
+                  </p>
+                </div>
+              </div>
+
+              {/* Contact note */}
               <p className="checkout-success-note">
-                📧 Confirmation sent to <strong>{email}</strong><br />
-                📞 We'll call you at <strong>{phone}</strong> for confirmation
+                📞 Confirmation call to <strong>{phone}</strong><br />
+                📧 Details sent to <strong>{email}</strong>
               </p>
 
+              {/* Actions */}
               <div className="checkout-success-actions">
-                <Link to="/" className="checkout-success-btn checkout-success-btn--primary">
-                  Back to Home
+                <Link
+                  to={`/track-order`}
+                  state={{ prefillOrderId: orderId }}
+                  className="checkout-success-btn checkout-success-btn--primary"
+                >
+                  <Search size={16} /> Track Order #{orderId}
                 </Link>
                 <Link to="/instant-printing" className="checkout-success-btn checkout-success-btn--secondary">
                   Continue Shopping
@@ -607,9 +512,10 @@ const Checkout: React.FC = () => {
             </div>
           </div>
         )}
+
       </div>
 
-      {/* Unavailable modal */}
+      {/* Unavailable modal (fallback) */}
       {showUnavailable && (
         <div className="unavailable-overlay" onClick={() => setShowUnavailable(false)}>
           <div className="unavailable-modal" onClick={e => e.stopPropagation()}>
@@ -619,8 +525,7 @@ const Checkout: React.FC = () => {
             <div className="unavailable-icon">⚠️</div>
             <h3 className="unavailable-title">Service Temporarily Unavailable</h3>
             <p className="unavailable-text">
-              Our online order service is currently unavailable. We apologize for the inconvenience.
-              Please reach out to us directly to place your order — we'd love to hear from you!
+              Please reach out to us directly to place your order!
             </p>
             <div className="unavailable-actions">
               <a href={`tel:+${import.meta.env.VITE_CONTACT_NUMBER}`} className="unavailable-btn unavailable-btn--call">

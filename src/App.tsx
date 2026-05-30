@@ -8,6 +8,7 @@ import InstantPrinting from "./components/InstantPrinting";
 import ContactUs from "./components/ContactUs";
 import ProductDetail from "./components/ProductDetail";
 import Checkout from "./components/Checkout";
+import TrackOrder from "./components/TrackOrder";
 import BottomNav from "./components/BottomNav";
 import { HelmetProvider } from "react-helmet-async";
 import "./App.css";
@@ -34,6 +35,7 @@ function AppInner() {
           <Route path="/instant-printing" element={<InstantPrinting />} />
           <Route path="/instant-printing/:id" element={<ProductDetail />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/track-order" element={<TrackOrder />} />
           <Route path="/contact" element={<ContactUs />} />
         </Routes>
       </main>

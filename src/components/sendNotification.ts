@@ -1,18 +1,4 @@
 import emailjs from '@emailjs/browser';
-
-// ─── EmailJS Configuration ────────────────────────────────────────────────────
-// These values come from your EmailJS dashboard:
-//   1. Sign up free at https://www.emailjs.com
-//   2. Create an Email Service (Gmail, Outlook, etc.)
-//   3. Create Email Templates (see below)
-//   4. Copy your Public Key from Account > General
-//
-// Set these in your .env file:
-//   VITE_EMAILJS_SERVICE_ID=service_xxxxxxx
-//   VITE_EMAILJS_CONTACT_TEMPLATE_ID=template_xxxxxxx
-//   VITE_EMAILJS_ORDER_TEMPLATE_ID=template_xxxxxxx
-//   VITE_EMAILJS_PUBLIC_KEY=xxxxxxxxxxxxxxx
-
 export const ENABLE_NOTIFICATIONS = import.meta.env.VITE_ENABLE_EMAIL_NOTIFICATIONS === 'true';
 const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || '';
 const CONTACT_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_CONTACT_TEMPLATE_ID || '';
@@ -49,8 +35,6 @@ export interface OrderFormData {
   productPrice: string;
   totalAmount: string;
   imageCount: number;
-  paymentMethod: string;
-  upiRef: string;
   notes: string;
   orderId: string;
 }
@@ -123,13 +107,14 @@ export async function sendOrderNotification(data: OrderFormData): Promise<boolea
       product_price: data.productPrice,
       total_amount: data.totalAmount,
       image_count: data.imageCount.toString(),
-      payment_method: data.paymentMethod === 'upi' ? 'UPI' : 'Cash on Delivery',
-      upi_ref: data.upiRef || 'N/A',
+      // Payment is collected offline after order — team calls/WhatsApps the customer
+      payment_method: 'Offline – Payment instructions will be shared with the customer after order confirmation',
+      payment_status: 'Pending – Awaiting customer payment',
       notes: data.notes || 'None',
       // Template fields
-      to_name: 'Krishna Creation',
-      to_email: TO_EMAIL,
-      subject: `🛒 New Order #${data.orderId} from ${data.customerName} — ₹${data.totalAmount}`,
+      to_name: data.customerName,
+      to_email: data.customerEmail,
+      subject: `🛒 Order Placed Successfully. Order Number #${data.orderId} – ₹${data.totalAmount} – ${data.customerName} (Payment Pending)`,
     };
 
     const response = await emailjs.send(SERVICE_ID, ORDER_TEMPLATE_ID, templateParams);

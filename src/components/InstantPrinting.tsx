@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { ShoppingBag, Bell, Instagram, Mail, Sparkles, ArrowRight, Star } from 'lucide-react';
+import { ShoppingBag, Bell, Instagram, Mail, Sparkles, ArrowRight, Star, Search, Package } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 // ─── Coming Soon Flag ─────────────────────────────────────────────────────────
@@ -38,25 +38,25 @@ export const products: PrintProduct[] = [
     title: 'Premium Photo Prints',
     subtitle: 'Gallery-quality prints on archival paper',
     emoji: '🖨️',
-    price: '₹199',
+    price: '₹ Based on size',
     rating: 4.9,
     reviews: 238,
     tags: ['Glossy/Matte', 'Archival', 'Multiple Sizes'],
     gradient: 'linear-gradient(135deg, #3b82f6, #06b6d4)',
     accentColor: '#3b82f6',
   },
-  {
-    id: 'photo-frame',
-    title: 'Photo Frame',
-    subtitle: 'Elegant frames to showcase your moments',
-    emoji: '🖼️',
-    price: '₹799',
-    rating: 4.7,
-    reviews: 86,
-    tags: ['Wood/Acrylic', 'Wall Mount', 'A4/A3'],
-    gradient: 'linear-gradient(135deg, #8b5cf6, #a855f7)',
-    accentColor: '#8b5cf6',
-  },
+  // {
+  //   id: 'photo-frame',
+  //   title: 'Photo Frame',
+  //   subtitle: 'Elegant frames to showcase your moments',
+  //   emoji: '🖼️',
+  //   price: '₹799',
+  //   rating: 4.7,
+  //   reviews: 86,
+  //   tags: ['Wood/Acrylic', 'Wall Mount', 'A4/A3'],
+  //   gradient: 'linear-gradient(135deg, #8b5cf6, #a855f7)',
+  //   accentColor: '#8b5cf6',
+  // },
   // {
   //   id: 'gift-combo',
   //   title: 'Gift Combo Pack',
@@ -268,6 +268,12 @@ const ProductListing: React.FC = () => {
         <p className="plp-hero-sub">
           Turn your cherished memories into beautiful prints, mugs, frames, and more — crafted with love and premium quality.
         </p>
+        {/* Track Order CTA */}
+        <Link to="/track-order" className="plp-track-order-btn" id="plp-track-order-btn">
+          <Package size={16} />
+          <span>Track Your Order</span>
+          <Search size={14} />
+        </Link>
       </section>
 
       {/* ── Product Grid ─────────────────────────────────── */}
