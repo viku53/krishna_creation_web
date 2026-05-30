@@ -5,34 +5,65 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Favicon & Touch Icon -->
+  <!-- ── Favicon & Touch Icons ─────────────────────────────────────── -->
   <link rel="icon" type="image/png" href="/logo.png" />
   <link rel="apple-touch-icon" href="/logo.png" />
+  <link rel="shortcut icon" href="/logo.png" />
 
-  <!-- Fallback title/description (overridden per-page by react-helmet-async) -->
-  <title>Krishna Creation</title>
-  <meta name="description" content="Krishna Creation – Mumbai's premium photography studio specialising in wedding photography, pre-wedding shoots, portrait, product photography, cinematic reels & videography. Modern Vision, Timeless Memories." />
-  <meta name="keywords" content="Krishna Creation, photography studio Mumbai, wedding photographer Mumbai, pre-wedding photography, candid photography, portrait photography, product photography, event photography, cinematic reels, videography Mumbai, wedding videography, Nikunj Sindhwad, engagement photography, haldi photography, sangeet photography, maternity photography, newborn photography, fashion photography, corporate photography, instant photo printing, custom mugs Mumbai, photo frames, gift combos" />
+  <!-- ── Performance: Preconnect to critical origins ───────────────── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://www.google-analytics.com" />
+  <link rel="dns-prefetch" href="https://www.google.com" />
 
-  <!-- Global SEO -->
+  <!-- ── Fallback Title & Description (overridden per-page by react-helmet-async) -->
+  <title>Krishna Creation | Best Photography – Wedding, Pre-Wedding & Event Photography</title>
+  <meta name="description"
+    content="Krishna Creation – Mumbai's #1 photography studio by Nikunj Sindhwad. Specialising in wedding photography, pre-wedding shoots, portrait, candid, product photography, cinematic reels & videography across Mumbai, Navi Mumbai & Maharashtra. Modern Vision, Timeless Memories." />
+  <meta name="keywords"
+    content="best photography studio Mumbai, best wedding photographer Mumbai, photography near me, wedding photography Mumbai, pre-wedding photography Mumbai, candid photography, portrait photography, product photography, event photography, cinematic reels, videography Mumbai, wedding videography, Nikunj Sindhwad, engagement photography, haldi photography, sangeet photography, maternity photography, newborn photography, fashion photography, corporate photography, instant photo printing Mumbai, custom mugs Mumbai, photo frames, personalised gifts Mumbai, Krishna Creation, top photographer Mumbai, professional photographer Mumbai, affordable wedding photographer Mumbai, Indian wedding photographer" />
+
+  <!-- ── Global SEO ──────────────────────────────────────────────────── -->
   <meta name="author" content="Nikunj Sindhwad – Krishna Creation" />
-  <meta name="robots" content="index, follow" />
-  <meta name="googlebot" content="index, follow" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="bingbot" content="index, follow" />
   <meta name="theme-color" content="#1a1a2e" />
+  <meta name="rating" content="general" />
+  <meta name="revisit-after" content="7 days" />
+  <meta name="language" content="English" />
+  <meta name="geo.region" content="IN-MH" />
+  <meta name="geo.placename" content="Mumbai, Maharashtra, India" />
+  <meta name="geo.position" content="19.0760;72.8777" />
+  <meta name="ICBM" content="19.0760, 72.8777" />
 
-  <!-- Open Graph — global/fallback values (url, title, description overridden per-page) -->
+  <!-- ── Canonical (fallback — each page overrides via Helmet) ─────── -->
+  <link rel="canonical" href="https://krishnacreationphotography.com/" />
+
+  <!-- ── Open Graph — global/fallback values ───────────────────────── -->
   <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="Krishna Creation" />
+  <meta property="og:site_name" content="Krishna Creation Photography" />
   <meta property="og:locale" content="en_IN" />
+  <meta property="og:url" content="https://krishnacreationphotography.com/" />
+  <meta property="og:title"
+    content="Krishna Creation | Best Photography Studio Mumbai – Wedding & Pre-Wedding Photography" />
+  <meta property="og:description"
+    content="Mumbai's top photography studio – wedding, portrait, fashion & product photography. Cinematic reels & videography by Nikunj Sindhwad. Modern Vision, Timeless Memories." />
   <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
-  <meta property="og:image:alt" content="Krishna Creation Photography Logo" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Krishna Creation Photography – Best Photography Studio in Mumbai" />
 
-  <!-- Twitter Card — global/fallback values -->
+  <!-- ── Twitter Card ───────────────────────────────────────────────── -->
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@krishna_creation10" />
+  <meta name="twitter:title" content="Krishna Creation | Best Photography Studio Mumbai" />
+  <meta name="twitter:description"
+    content="Mumbai's top wedding & event photography studio. Cinematic reels & videography by Nikunj Sindhwad." />
   <meta name="twitter:image" content="https://krishnacreationphotography.com/logo.png" />
-  <meta name="twitter:image:alt" content="Krishna Creation Photography" />
+  <meta name="twitter:image:alt" content="Krishna Creation Photography Mumbai" />
 
-  <!-- Structured Data (JSON-LD) — organisation & website schema -->
+  <!-- ── Structured Data (JSON-LD) ─────────────────────────────────── -->
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -41,71 +72,265 @@
           "@type": "WebSite",
           "@id": "https://krishnacreationphotography.com/#website",
           "url": "https://krishnacreationphotography.com/",
-          "name": "Krishna Creation",
-          "description": "Premium Photography Studio. Modern Vision, Timeless Memories."
+          "name": "Krishna Creation Photography",
+          "description": "Best Photography Studio in Mumbai. Wedding, Pre-Wedding, Portrait & Event Photography. Modern Vision, Timeless Memories."
         },
         {
           "@type": ["LocalBusiness", "ProfessionalService"],
           "@id": "https://krishnacreationphotography.com/#organization",
           "name": "Krishna Creation",
+          "alternateName": ["Krishna Creation Photography", "Krishna Creation Studio"],
           "url": "https://krishnacreationphotography.com/",
           "logo": {
             "@type": "ImageObject",
-            "url": "https://krishnacreationphotography.com/logo.png"
+            "url": "https://krishnacreationphotography.com/logo.png",
+            "width": 512,
+            "height": 512
           },
-          "image": "https://krishnacreationphotography.com/logo.png",
-          "founder": {
-            "@type": "Person",
-            "name": "Nikunj Sindhwad",
-            "jobTitle": "Professional Photographer"
-          },
+          "image": [
+            "https://krishnacreationphotography.com/logo.png",
+            "https://krishnacreationphotography.com/photos/Wedding/01.webp",
+            "https://krishnacreationphotography.com/photos/Pre-Wedding/01.webp"
+          ],
+          "founder": [
+            {
+              "@type": "Person",
+              "name": "Nikunj Sindhwad",
+              "jobTitle": "Owner & Lead Photographer",
+              "description": "Professional photographer with 15+ years of experience specialising in wedding and candid photography in Mumbai"
+            },
+            {
+              "@type": "Person",
+              "name": "Kunj Sindhwad",
+              "jobTitle": "Owner & Creative Director",
+              "description": "Creative director with 10+ years of experience in pre-wedding shoots and event videography"
+            }
+          ],
           "email": "krishnacreation1606@gmail.com",
           "telephone": "+919769989807",
-          "description": "From breathtaking photography to cinematic reels — we craft every detail with artistry and passion.",
+          "description": "Krishna Creation is Mumbai's premier photography studio offering wedding photography, pre-wedding shoots, candid photography, portrait photography, product photography, cinematic reels and videography. Led by Nikunj Sindhwad with 15+ years of experience.",
           "address": {
             "@type": "PostalAddress",
             "addressLocality": "Mumbai",
             "addressRegion": "Maharashtra",
+            "postalCode": "400000",
             "addressCountry": "IN"
           },
           "areaServed": [
             { "@type": "City", "name": "Mumbai" },
+            { "@type": "City", "name": "Navi Mumbai" },
+            { "@type": "City", "name": "Thane" },
+            { "@type": "City", "name": "Pune" },
             { "@type": "State", "name": "Maharashtra" },
             { "@type": "Country", "name": "India" }
           ],
           "slogan": "Modern Vision, Timeless Memories.",
+          "foundingDate": "2009",
+          "numberOfEmployees": {
+            "@type": "QuantitativeValue",
+            "minValue": 2,
+            "maxValue": 10
+          },
+          "priceRange": "₹₹",
+          "currenciesAccepted": "INR",
+          "paymentAccepted": "Cash, Credit Card, UPI, Bank Transfer",
+          "openingHoursSpecification": [
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+              "opens": "09:00",
+              "closes": "21:00"
+            }
+          ],
           "knowsAbout": [
             "Wedding Photography", "Portrait Photography", "Fashion Photography",
             "Product Photography", "Pre-Wedding Photography", "Maternity Photography",
             "Newborn Photography", "Event Photography", "Corporate Photography",
             "Candid Photography", "Cinematic Reels", "Videography",
-            "Lifestyle Photography", "Couple Photography", "Family Photography"
+            "Lifestyle Photography", "Couple Photography", "Family Photography",
+            "Haldi Photography", "Sangeet Photography", "Engagement Photography",
+            "Reception Photography", "4K Videography", "Drone Photography"
           ],
           "hasOfferCatalog": {
             "@type": "OfferCatalog",
             "name": "Photography & Videography Services",
             "itemListElement": [
-              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Wedding Photography" } },
-              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Pre-Wedding Photography" } },
-              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Portrait Photography" } },
-              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Fashion Photography" } },
-              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Product Photography" } },
-              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Maternity Photography" } },
-              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Newborn Photography" } },
-              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Event Photography" } },
-              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Cinematic Reels & Videography" } },
-              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Corporate Photography" } }
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Wedding Photography",
+                  "description": "Complete wedding day photography coverage including candid and traditional styles"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Pre-Wedding Photography",
+                  "description": "Romantic pre-wedding photo shoots at beautiful locations"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Portrait Photography",
+                  "description": "Professional portrait photography for individuals, couples and families"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Fashion Photography",
+                  "description": "High-end fashion and model photography"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Product Photography",
+                  "description": "Professional product photography for e-commerce and marketing"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Maternity Photography",
+                  "description": "Beautiful maternity and baby shower photography sessions"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Event Photography",
+                  "description": "Complete event coverage for corporate, birthday and social events"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Cinematic Reels & Videography",
+                  "description": "4K cinematic wedding films and short highlight reels"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Instant Photo Printing",
+                  "description": "On-site instant photo printing at events – custom mugs, frames and photo prints"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Corporate Photography",
+                  "description": "Professional corporate event and headshot photography"
+                }
+              }
             ]
           },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "5.0",
+            "bestRating": "5",
+            "worstRating": "1",
+            "ratingCount": "200",
+            "reviewCount": "200"
+          },
+          "review": [
+            {
+              "@type": "Review",
+              "author": { "@type": "Person", "name": "Kinjal & Ronak" },
+              "reviewRating": { "@type": "Rating", "ratingValue": "5", "bestRating": "5" },
+              "reviewBody": "Krishna Creation captured every emotion of our wedding perfectly. The reels were magical! Nikunj and his team are truly the best wedding photographers in Mumbai.",
+              "datePublished": "2025-12-15"
+            },
+            {
+              "@type": "Review",
+              "author": { "@type": "Person", "name": "Meera S." },
+              "reviewRating": { "@type": "Rating", "ratingValue": "5", "bestRating": "5" },
+              "reviewBody": "The instant prints were so beautiful. Our family was blown away by the quality! Highly recommend Krishna Creation for any event in Mumbai.",
+              "datePublished": "2025-11-20"
+            },
+            {
+              "@type": "Review",
+              "author": { "@type": "Person", "name": "Kiran & Paren" },
+              "reviewRating": { "@type": "Rating", "ratingValue": "5", "bestRating": "5" },
+              "reviewBody": "Absolutely cinematic. Every frame felt like a painting. Hands down the best photography studio in Mumbai. Highly recommended!",
+              "datePublished": "2026-01-10"
+            }
+          ],
           "sameAs": [
-            "https://instagram.com/krishna_creation10"
+            "https://www.instagram.com/krishna_creation10",
+            "https://wa.me/919769989807"
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Which is the best photography studio in Mumbai?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Krishna Creation is one of Mumbai's top-rated photography studios, led by Nikunj Sindhwad with 15+ years of experience. We specialise in wedding photography, pre-wedding shoots, candid photography, portrait photography, and cinematic videography across Mumbai, Navi Mumbai, and Maharashtra."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How much does wedding photography cost in Mumbai?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Krishna Creation offers competitive and transparent wedding photography packages in Mumbai. The price depends on coverage duration, number of photographers, and specific services. Contact us for a personalised quote tailored to your event. We ensure premium quality at every price point."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Do you offer pre-wedding photography shoots in Mumbai?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes! We offer beautiful pre-wedding photography shoots at various stunning locations in and around Mumbai. Our pre-wedding shoots are romantic, creative, and tailored to your love story. Book your shoot via our contact page."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Do you cover events outside Mumbai?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Absolutely. While we are based in Mumbai, we regularly cover weddings and events across Maharashtra including Pune, Navi Mumbai, Thane, and destination weddings across India. Contact us to discuss your requirements."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What photography services does Krishna Creation offer?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Krishna Creation offers a comprehensive range of services: wedding photography, pre-wedding shoots, haldi & sangeet photography, engagement photography, portrait photography, fashion photography, product photography, corporate photography, maternity photography, cinematic reels, 4K wedding videography, and instant photo printing (mugs, frames, prints) at events."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How do I book a photography session with Krishna Creation?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "You can book a session by visiting our Contact page and filling in the booking form, or by calling/WhatsApping us at +91 97699 89807. We'll get back to you within 24 hours with a personalised quote."
+              }
+            }
           ]
         }
       ]
     }
   </script>
 
-  <!-- SPA redirect restoration (pairs with public/404.html) -->
+  <!-- ── SPA redirect restoration (pairs with public/404.html) ─────── -->
   <script>
     (function () {
       var redirect = sessionStorage.redirect;

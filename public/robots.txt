@@ -1,3 +1,23 @@
 User-agent: *
 Allow: /
+Disallow: /checkout
+Disallow: /*.json$
+
+# Sitemaps
 Sitemap: https://krishnacreationphotography.com/sitemap.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
+
+# Allow Google Image Bot explicitly
+User-agent: Googlebot-Image
+Allow: /photos/
+Allow: /logo.png
+
+# Allow Google Video Bot
+User-agent: Googlebot-Video
+Allow: /
+
+# Allow Bing
+User-agent: Bingbot
+Allow: /

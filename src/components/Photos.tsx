@@ -186,14 +186,39 @@ const Photos: React.FC = () => {
   return (
     <div className="photos-page dark-theme pb-4">
       <Helmet>
-        <title>Photography Portfolio – Wedding, Pre-Wedding &amp; Events | Krishna Creation</title>
-        <meta name="description" content="Browse Krishna Creation's photography portfolio – wedding, pre-wedding, haldi, sangeet, engagement and event photography by Nikunj Sindhwad. Mumbai's finest photography studio." />
-        <meta name="keywords" content="wedding photography portfolio Mumbai, pre-wedding photos, haldi photography, sangeet photography, engagement photography, candid wedding photos, Krishna Creation portfolio, wedding photographer portfolio Mumbai, Indian wedding photography" />
+        <title>Photography Portfolio | Best Wedding & Pre-Wedding Photographer Mumbai – Krishna Creation</title>
+        <meta name="description" content="Browse Krishna Creation's photography portfolio – Mumbai's best wedding, pre-wedding, haldi, sangeet, engagement & candid photography by Nikunj Sindhwad. 2000+ happy clients, 500+ events covered. View gallery now!" />
+        <meta name="keywords" content="wedding photography portfolio Mumbai, best wedding photographer Mumbai, pre-wedding photos Mumbai, haldi photography Mumbai, sangeet photography Mumbai, engagement photography Mumbai, candid wedding photos Mumbai, Krishna Creation portfolio, wedding photographer portfolio Mumbai, Indian wedding photography, top wedding photographer Mumbai, candid photographer Mumbai, Nikunj Sindhwad photography" />
         <link rel="canonical" href="https://krishnacreationphotography.com/photos" />
         <meta property="og:url" content="https://krishnacreationphotography.com/photos" />
-        <meta property="og:title" content="Photography Portfolio | Krishna Creation" />
-        <meta property="og:description" content="Wedding, pre-wedding, haldi, sangeet &amp; event photography by Krishna Creation, Mumbai." />
-        <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Photography Portfolio | Best Wedding Photographer Mumbai – Krishna Creation" />
+        <meta property="og:description" content="Wedding, pre-wedding, haldi, sangeet & engagement photography by Krishna Creation, Mumbai's best photography studio. 2000+ happy clients." />
+        <meta property="og:image" content="https://krishnacreationphotography.com/photos/Wedding/05.webp" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="800" />
+        <meta property="og:image:alt" content="Wedding photography portfolio by Krishna Creation Mumbai" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://krishnacreationphotography.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Photography Portfolio", "item": "https://krishnacreationphotography.com/photos" }
+          ]
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "ImageGallery",
+          "name": "Krishna Creation Photography Portfolio",
+          "description": "Wedding, pre-wedding, haldi, sangeet, engagement and candid photography portfolio by Krishna Creation, Mumbai's best photography studio",
+          "url": "https://krishnacreationphotography.com/photos",
+          "author": {
+            "@type": "Person",
+            "name": "Nikunj Sindhwad",
+            "jobTitle": "Professional Photographer",
+            "worksFor": { "@type": "Organization", "name": "Krishna Creation" }
+          }
+        })}</script>
       </Helmet>
 
       {/* ── Page Hero ──────────────────────────────────────────── */}
@@ -249,7 +274,7 @@ const Photos: React.FC = () => {
           >
             <img
               src={photo.url}
-              alt={`${photo.category} photo`}
+              alt={`${photo.category} photography Mumbai – ${photo.category === 'Wedding' ? 'wedding ceremony captured by Krishna Creation' : photo.category === 'Pre-Wedding' ? 'romantic pre-wedding shoot by Krishna Creation Mumbai' : photo.category === 'Haldi' ? 'colourful haldi ceremony photography by Krishna Creation' : photo.category === 'Sangeet' ? 'vibrant sangeet photography by Krishna Creation Mumbai' : 'engagement photography by Krishna Creation Mumbai'}`}
               className="photo-card-img"
               loading={idx < 8 ? "eager" : "lazy"}
               decoding="async"

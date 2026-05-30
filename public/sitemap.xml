@@ -1,39 +1,98 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- ── HOME ────────────────────────────────────────────────────── -->
   <url>
     <loc>https://krishnacreationphotography.com/</loc>
-    <lastmod>2026-05-18</lastmod>
+    <lastmod>2026-05-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://krishnacreationphotography.com/photos/Wedding/01.webp</image:loc>
+      <image:title>Krishna Creation – Best Wedding Photography Mumbai</image:title>
+      <image:caption>Premium wedding photography by Krishna Creation, Mumbai's top photography studio</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://krishnacreationphotography.com/photos/Pre-Wedding/024.webp</image:loc>
+      <image:title>Pre-Wedding Photography Mumbai – Krishna Creation</image:title>
+      <image:caption>Romantic pre-wedding shoot by Krishna Creation photography studio Mumbai</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://krishnacreationphotography.com/photos/Haldi/05.webp</image:loc>
+      <image:title>Haldi Ceremony Photography Mumbai</image:title>
+      <image:caption>Vibrant haldi ceremony captured by Krishna Creation, Mumbai</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://krishnacreationphotography.com/logo.png</image:loc>
+      <image:title>Krishna Creation Photography Logo</image:title>
+      <image:caption>Krishna Creation – Premium Photography Studio Mumbai</image:caption>
+    </image:image>
   </url>
+
+  <!-- ── PHOTOS PORTFOLIO ──────────────────────────────────────────── -->
   <url>
     <loc>https://krishnacreationphotography.com/photos</loc>
-    <lastmod>2026-05-18</lastmod>
+    <lastmod>2026-05-30</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://krishnacreationphotography.com/photos/Wedding/05.webp</image:loc>
+      <image:title>Wedding Photography Portfolio – Krishna Creation Mumbai</image:title>
+      <image:caption>Stunning wedding photography by Krishna Creation, best wedding photographer in Mumbai</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://krishnacreationphotography.com/photos/Wedding/09.webp</image:loc>
+      <image:title>Candid Wedding Photography Mumbai</image:title>
+      <image:caption>Candid wedding moment captured by Krishna Creation photography studio</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://krishnacreationphotography.com/photos/Engagment/01.webp</image:loc>
+      <image:title>Engagement Photography Mumbai – Krishna Creation</image:title>
+      <image:caption>Beautiful engagement ceremony photography by Krishna Creation, Mumbai</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://krishnacreationphotography.com/photos/Sangeet/01.webp</image:loc>
+      <image:title>Sangeet Photography Mumbai</image:title>
+      <image:caption>Colourful sangeet ceremony photography by Krishna Creation</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://krishnacreationphotography.com/photos/Pre-Wedding/002.webp</image:loc>
+      <image:title>Pre-Wedding Photography Portfolio Mumbai</image:title>
+      <image:caption>Pre-wedding shoot by Krishna Creation photography studio Mumbai</image:caption>
+    </image:image>
   </url>
+
+  <!-- ── REELS ─────────────────────────────────────────────────────── -->
   <url>
     <loc>https://krishnacreationphotography.com/reels</loc>
-    <lastmod>2026-05-18</lastmod>
+    <lastmod>2026-05-30</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
   </url>
+
+  <!-- ── VIDEOS ────────────────────────────────────────────────────── -->
   <url>
     <loc>https://krishnacreationphotography.com/videos</loc>
-    <lastmod>2026-05-18</lastmod>
+    <lastmod>2026-05-30</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
   </url>
+
+  <!-- ── INSTANT PRINTING ──────────────────────────────────────────── -->
   <url>
     <loc>https://krishnacreationphotography.com/instant-printing</loc>
-    <lastmod>2026-05-18</lastmod>
+    <lastmod>2026-05-30</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.75</priority>
   </url>
+
+  <!-- ── CONTACT ───────────────────────────────────────────────────── -->
   <url>
     <loc>https://krishnacreationphotography.com/contact</loc>
-    <lastmod>2026-05-18</lastmod>
+    <lastmod>2026-05-30</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.80</priority>
   </url>
+
 </urlset>

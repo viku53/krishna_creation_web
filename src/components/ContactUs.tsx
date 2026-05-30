@@ -135,14 +135,43 @@ const ContactUs: React.FC = () => {
   return (
     <div className="contact-page">
       <Helmet>
-        <title>Contact Us – Book a Photography Session | Krishna Creation</title>
-        <meta name="description" content="Contact Krishna Creation to book your wedding, pre-wedding or event photography in Mumbai. Get in touch with Nikunj Sindhwad for a personalised quote within 24 hours." />
-        <meta name="keywords" content="contact Krishna Creation, book wedding photographer Mumbai, photography booking Mumbai, hire wedding photographer, photography inquiry Mumbai, pre-wedding shoot booking, event photography booking, Nikunj Sindhwad contact, photography studio contact Mumbai" />
+        <title>Contact & Book | Best Wedding Photographer Mumbai – Krishna Creation by Nikunj Sindhwad</title>
+        <meta name="description" content="Book Mumbai's best photography studio – Krishna Creation. Contact Nikunj Sindhwad for wedding, pre-wedding, haldi, sangeet & event photography. Personalised quote within 24 hours. Call/WhatsApp +91 97699 89807." />
+        <meta name="keywords" content="book best wedding photographer Mumbai, contact Krishna Creation, photography booking Mumbai, hire wedding photographer Mumbai, photography inquiry Mumbai, pre-wedding shoot booking Mumbai, event photography booking, Nikunj Sindhwad contact, photography studio contact Mumbai, affordable photographer Mumbai, personalised photography quote Mumbai" />
         <link rel="canonical" href="https://krishnacreationphotography.com/contact" />
         <meta property="og:url" content="https://krishnacreationphotography.com/contact" />
-        <meta property="og:title" content="Contact Us | Krishna Creation Photography" />
-        <meta property="og:description" content="Book your photography session with Krishna Creation, Mumbai. Wedding, pre-wedding & event photography specialists." />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Book a Session | Krishna Creation – Best Photography Studio Mumbai" />
+        <meta property="og:description" content="Book your wedding, pre-wedding & event photography with Krishna Creation, Mumbai's best photography studio. Personalised quote within 24 hours." />
         <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
+        <meta property="og:image:alt" content="Contact Krishna Creation – Best Photography Studio Mumbai" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://krishnacreationphotography.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Contact Us", "item": "https://krishnacreationphotography.com/contact" }
+          ]
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "ContactPage",
+          "name": "Book a Photography Session – Krishna Creation Mumbai",
+          "url": "https://krishnacreationphotography.com/contact",
+          "description": "Contact form and booking page for Krishna Creation, Mumbai's best photography studio",
+          "mainEntity": {
+            "@type": "LocalBusiness",
+            "name": "Krishna Creation",
+            "telephone": "+919769989807",
+            "email": "krishnacreation1606@gmail.com",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Mumbai",
+              "addressRegion": "Maharashtra",
+              "addressCountry": "IN"
+            }
+          }
+        })}</script>
       </Helmet>
       {/* ── Decorative blobs ──────────────────────────────────── */}
       <div className="cs-blob cs-blob--1" />

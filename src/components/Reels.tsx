@@ -193,14 +193,24 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
   return (
     <div className="reel-page">
       <Helmet>
-        <title>Cinematic Reels – Short Wedding Films | Krishna Creation</title>
-        <meta name="description" content="Watch cinematic short reels and highlight films from Krishna Creation – Mumbai's best wedding & event videographers. Swipe up for breathtaking moments." />
-        <meta name="keywords" content="wedding reels Mumbai, cinematic reels, short wedding films, wedding highlight video, pre-wedding reel, event reel, Instagram reels photographer Mumbai, Krishna Creation reels, wedding videographer Mumbai" />
+        <title>Cinematic Reels – Best Wedding Highlight Films Mumbai | Krishna Creation</title>
+        <meta name="description" content="Watch Krishna Creation's cinematic wedding reels & short highlight films – Mumbai's best wedding & event videographers. Emotional storytelling, vibrant 4K footage. Swipe & experience the magic!" />
+        <meta name="keywords" content="wedding reels Mumbai, cinematic wedding reels, best wedding videographer Mumbai, short wedding films, wedding highlight video Mumbai, pre-wedding reel Mumbai, event reel, Instagram reels wedding Mumbai, Krishna Creation reels, wedding videographer Mumbai, 4K wedding reel, best wedding reel maker Mumbai" />
         <link rel="canonical" href="https://krishnacreationphotography.com/reels" />
         <meta property="og:url" content="https://krishnacreationphotography.com/reels" />
-        <meta property="og:title" content="Cinematic Reels | Krishna Creation" />
-        <meta property="og:description" content="Short cinematic reels from Krishna Creation – wedding, pre-wedding & event highlight films." />
+        <meta property="og:type" content="video.other" />
+        <meta property="og:title" content="Cinematic Wedding Reels | Krishna Creation – Best Videographer Mumbai" />
+        <meta property="og:description" content="Mumbai's best cinematic wedding reels & short highlight films by Krishna Creation. 4K, emotional, vibrant storytelling." />
         <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
+        <meta property="og:image:alt" content="Cinematic wedding reels by Krishna Creation Mumbai" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://krishnacreationphotography.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Cinematic Reels", "item": "https://krishnacreationphotography.com/reels" }
+          ]
+        })}</script>
       </Helmet>
 
       {/* Page Hero */}

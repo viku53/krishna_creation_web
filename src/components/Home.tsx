@@ -163,15 +163,28 @@ const Home: React.FC = () => {
   return (
     <div className="home-page">
       <Helmet>
-        <title>Krishna Creation | Premium Photography Studio Mumbai</title>
-        <meta name="description" content="Krishna Creation – Mumbai's premium photography studio specialising in wedding, pre-wedding, portrait &amp; product photography, cinematic reels and videography. Modern Vision, Timeless Memories." />
-        <meta name="keywords" content="Krishna Creation, wedding photographer Mumbai, pre-wedding photography Mumbai, candid photography, portrait photography, product photography, event photography, cinematic reels, videography Mumbai, photography studio, Nikunj Sindhwad photographer" />
+        <title>Krishna Creation | Best Photography Studio in Mumbai – Wedding, Pre-Wedding & Event Photography</title>
+        <meta name="description" content="Krishna Creation – Mumbai's best photography studio by Nikunj Sindhwad. Wedding photography, pre-wedding shoots, haldi, sangeet, engagement, portrait & candid photography. Cinematic reels & 4K videography. 15+ years, 2000+ happy clients. Book now!" />
+        <meta name="keywords" content="best photography studio Mumbai, best wedding photographer Mumbai, photography near me Mumbai, wedding photography Mumbai, pre-wedding photography Mumbai, candid photography Mumbai, portrait photography, haldi photography Mumbai, sangeet photography, engagement photography Mumbai, event photographer Mumbai, cinematic reels, videography Mumbai, 4K wedding videography, top photographer Mumbai, professional photographer Mumbai, affordable wedding photographer Mumbai, Nikunj Sindhwad photographer, Krishna Creation Mumbai" />
         <link rel="canonical" href="https://krishnacreationphotography.com/" />
         <meta property="og:url" content="https://krishnacreationphotography.com/" />
-        <meta property="og:title" content="Krishna Creation | Premium Photography Studio Mumbai" />
-        <meta property="og:description" content="Mumbai's premium photography studio – wedding, portrait, fashion &amp; product photography. Cinematic reels &amp; videography. Modern Vision, Timeless Memories." />
-        <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Krishna Creation | Best Photography Studio Mumbai – Wedding & Pre-Wedding Photography" />
+        <meta property="og:description" content="Mumbai's best photography studio – wedding, pre-wedding, portrait & candid photography. 4K cinematic reels & videography by Nikunj Sindhwad. 15+ years, 2000+ happy clients. Modern Vision, Timeless Memories." />
+        <meta property="og:image" content="https://krishnacreationphotography.com/photos/Wedding/01.webp" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="800" />
+        <meta property="og:image:alt" content="Krishna Creation – Best Wedding Photography in Mumbai" />
         <meta name="twitter:url" content="https://krishnacreationphotography.com/" />
+        <meta name="twitter:title" content="Krishna Creation | Best Photography Studio Mumbai" />
+        <meta name="twitter:description" content="Mumbai's top wedding & event photography studio. 15+ years, 2000+ happy clients. Book now!" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://krishnacreationphotography.com/" }
+          ]
+        })}</script>
       </Helmet>
 
 
@@ -297,9 +310,15 @@ const Home: React.FC = () => {
         </div>
 
         <div className="portfolio-mosaic">
-          {['/photos/Wedding/05.webp', '/photos/Pre-Wedding/02.webp', '/photos/Wedding/13.webp', '/photos/Wedding/40.webp', '/photos/Haldi/05.webp'].map((src, i) => (
+          {[
+            { src: '/photos/Wedding/05.webp', alt: 'Wedding photography Mumbai – bride and groom captured by Krishna Creation' },
+            { src: '/photos/Pre-Wedding/02.webp', alt: 'Pre-wedding photography shoot Mumbai by Krishna Creation' },
+            { src: '/photos/Wedding/13.webp', alt: 'Candid wedding photography Mumbai – emotional moment by Krishna Creation' },
+            { src: '/photos/Wedding/40.webp', alt: 'Wedding ceremony photography Mumbai by Nikunj Sindhwad' },
+            { src: '/photos/Haldi/05.webp', alt: 'Haldi ceremony photography Mumbai – vibrant colours by Krishna Creation' },
+          ].map(({ src, alt }, i) => (
             <div key={i} className={`mosaic-item mosaic-item--${i + 1}`}>
-              <img src={src} alt={`Portfolio ${i + 1}`} className="mosaic-img" loading="lazy" decoding="async" />
+              <img src={src} alt={alt} className="mosaic-img" loading="lazy" decoding="async" />
             </div>
           ))}
         </div>
