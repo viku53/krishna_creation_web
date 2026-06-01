@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface MediaModalProps {
   open: boolean;
@@ -36,23 +36,22 @@ const MediaModal: React.FC<MediaModalProps> = ({ open, src, type, onClose, onPre
     >
       {/* Close */}
       <button className="modal-close" onClick={onClose} aria-label="Close">
-        X
+        <X size={20} strokeWidth={2.5} />
       </button>
 
       {/* Prev */}
       {onPrev && (
         <button className="modal-nav modal-nav--prev" onClick={e => { e.stopPropagation(); onPrev(); }} aria-label="Previous">
-          <span>{'<'}</span>
+          <ChevronLeft size={24} strokeWidth={2.5} />
         </button>
       )}
 
       {/* Next */}
       {onNext && (
         <button className="modal-nav modal-nav--next" onClick={e => { e.stopPropagation(); onNext(); }} aria-label="Next">
-          <span>{'>'}</span>
+          <ChevronRight size={24} strokeWidth={2.5} />
         </button>
-      )
-      }
+      )}
 
       {/* Content */}
       <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -70,7 +69,7 @@ const MediaModal: React.FC<MediaModalProps> = ({ open, src, type, onClose, onPre
         )}
         {caption && <div className="modal-caption">{caption}</div>}
       </div>
-    </div >
+    </div>
   );
 };
 
