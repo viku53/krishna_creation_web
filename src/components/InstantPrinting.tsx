@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { ShoppingBag, Bell, Instagram, Mail, Sparkles, ArrowRight, Star, Search, Package } from 'lucide-react';
+import { ShoppingBag, Bell, Instagram, Mail, Sparkles, ArrowRight, Star, Search, Package, Camera, Heart, Clock, Gift, CheckCircle, Zap, Printer } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 // ─── Coming Soon Flag ─────────────────────────────────────────────────────────
@@ -26,7 +26,7 @@ export const products: PrintProduct[] = [
     title: 'Custom Photo Mug',
     subtitle: 'Your favorite memories on premium ceramic',
     emoji: '☕',
-    price: '₹499',
+    price: '₹399',
     rating: 4.8,
     reviews: 124,
     tags: ['Ceramic', 'Dishwasher Safe', '330ml'],
@@ -277,6 +277,7 @@ const ProductListing: React.FC = () => {
       </section>
 
       {/* ── Product Grid ─────────────────────────────────── */}
+
       <section className="plp-grid-section">
         <div className="plp-grid">
           {products.map((product, idx) => (
@@ -333,7 +334,122 @@ const ProductListing: React.FC = () => {
           ))}
         </div>
       </section>
+
+      {/* ── Event Instant Printing Ad Section ──────────────── */}
+      <EventInstantPrinting />
     </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════
+// EVENT INSTANT PRINTING SECTION
+// ═══════════════════════════════════════════════════════════════
+const EventInstantPrinting: React.FC = () => {
+  const steps = [
+    {
+      icon: <Camera size={22} />,
+      title: 'Click',
+      desc: 'Our photographer captures beautiful picture of your guests during the event.',
+    },
+    {
+      icon: <Zap size={22} />,
+      title: 'Print',
+      desc: 'Photos are instantly printed within minutes — while the celebration is still going strong!',
+    },
+    {
+      icon: <Gift size={22} />,
+      title: 'Gift',
+      desc: 'Guests receive a personalised printed photo / Gift as their return gift before they step out.',
+    },
+  ];
+
+  const features = [
+    { icon: <Clock size={15} />, label: 'Prints in quick time' },
+    { icon: <Printer size={15} />, label: 'Premium quality paper' },
+    { icon: <Heart size={15} />, label: 'Guests absolutely love it' },
+    { icon: <CheckCircle size={15} />, label: 'Full setup included' },
+    { icon: <Star size={15} />, label: '1000+ events served' },
+  ];
+
+  return (
+    <section className="eip-section">
+      {/* Ambient blobs */}
+      <div className="eip-blob eip-blob--1" />
+      <div className="eip-blob eip-blob--2" />
+      <div className="eip-blob eip-blob--3" />
+
+      {/* Eyebrow */}
+      <div className="eip-eyebrow">
+        <Sparkles size={13} />
+        <span>Exclusive Event Service</span>
+      </div>
+
+      {/* Headline */}
+      <h2 className="eip-headline">
+        Your Guests Leave With
+        <span className="eip-headline-accent"><br />A Memory In Hand</span>
+      </h2>
+      <p className="eip-subline">
+        We set up a live instant-printing studio at your event — wedding, birthday, corporate gathering
+        or any celebration. While your guests are enjoying the moment, we capture, print, and pack
+        their photo. By the time they're leaving, their personalised return gift is already waiting.
+      </p>
+
+      {/* Feature pills */}
+      <div className="eip-pills">
+        {features.map((f) => (
+          <div key={f.label} className="eip-pill">
+            <span className="eip-pill-icon">{f.icon}</span>
+            {f.label}
+          </div>
+        ))}
+      </div>
+
+      {/* How it works */}
+      <div className="eip-steps-wrap">
+        <p className="eip-steps-label">How It Works</p>
+        <div className="eip-steps">
+          {steps.map((s, i) => (
+            <React.Fragment key={s.title}>
+              <div className="eip-step">
+                <div className="eip-step-icon">{s.icon}</div>
+                <div className="eip-step-num">0{i + 1}</div>
+                <h3 className="eip-step-title">{s.title}</h3>
+                <p className="eip-step-desc">{s.desc}</p>
+              </div>
+              {i < steps.length - 1 && <div className="eip-step-connector" />}
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+
+      {/* Pull quote */}
+      <div className="eip-quote">
+        <div className="eip-quote-mark">"</div>
+        <p className="eip-quote-text">
+          Not every return gift survives the week.<br />A photo lasts a lifetime.
+        </p>
+        <div className="eip-quote-author">
+          <Heart size={12} fill="#f43f5e" color="#f43f5e" />
+          <span>Krishna Creation — Mumbai</span>
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div className="eip-cta-wrap">
+        <Link
+          to="/contact"
+          onClick={() => setTimeout(() => window.location.hash = "contact-us", 100)}
+          className="eip-cta-btn"
+          id="eip-book-event-cta"
+        >
+          <span className="eip-cta-icon">📸</span>
+          Book Now for Your Event
+          <ArrowRight size={16} />
+        </Link>
+        {/* <p className="eip-cta-note">Free consultation · No advance required · Available Pan Mumbai</p> */}
+      </div>
+    </section>
   );
 };
 
