@@ -135,7 +135,7 @@ const ContactUs: React.FC = () => {
   return (
     <div className="contact-page">
       <Helmet>
-        <title>Contact & Book | Best Wedding Photographer Mumbai – Krishna Creation by Nikunj Sindhwad</title>
+        <title>Contact & Book | Best Wedding Photographer Mumbai – Krishna Creation by Nikunj Sindhwad & Kunj Sindhwad</title>
         <meta name="description" content="Book Mumbai's best photography studio – Krishna Creation. Contact Nikunj Sindhwad for wedding, pre-wedding, haldi, sangeet & event photography. Personalised quote within 24 hours. Call/WhatsApp +91 97699 89807." />
         <meta name="keywords" content="book best wedding photographer Mumbai, contact Krishna Creation, photography booking Mumbai, hire wedding photographer Mumbai, photography inquiry Mumbai, pre-wedding shoot booking Mumbai, event photography booking, Nikunj Sindhwad contact, photography studio contact Mumbai, affordable photographer Mumbai, personalised photography quote Mumbai" />
         <link rel="canonical" href="https://krishnacreationphotography.com/contact" />

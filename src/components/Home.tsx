@@ -164,13 +164,13 @@ const Home: React.FC = () => {
     <div className="home-page">
       <Helmet>
         <title>Krishna Creation | Best Photography Studio in Mumbai – Wedding, Pre-Wedding & Event Photography</title>
-        <meta name="description" content="Krishna Creation – Mumbai's best photography studio by Nikunj Sindhwad. Wedding photography, pre-wedding shoots, haldi, sangeet, engagement, portrait & candid photography. Cinematic reels & 4K videography. 15+ years, 2000+ happy clients. Book now!" />
+        <meta name="description" content="Krishna Creation – Mumbai's best photography studio by Nikunj Sindhwad & Kunj Sindhwad. Wedding photography, pre-wedding shoots, haldi, sangeet, engagement, portrait & candid photography. Cinematic reels & 4K videography. 15+ years, 2000+ happy clients. Book now!" />
         <meta name="keywords" content="best photography studio Mumbai, best wedding photographer Mumbai, photography near me Mumbai, wedding photography Mumbai, pre-wedding photography Mumbai, candid photography Mumbai, portrait photography, haldi photography Mumbai, sangeet photography, engagement photography Mumbai, event photographer Mumbai, cinematic reels, videography Mumbai, 4K wedding videography, top photographer Mumbai, professional photographer Mumbai, affordable wedding photographer Mumbai, Nikunj Sindhwad photographer, Krishna Creation Mumbai" />
         <link rel="canonical" href="https://krishnacreationphotography.com/" />
         <meta property="og:url" content="https://krishnacreationphotography.com/" />
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Krishna Creation | Best Photography Studio Mumbai – Wedding & Pre-Wedding Photography" />
-        <meta property="og:description" content="Mumbai's best photography studio – wedding, pre-wedding, portrait & candid photography. 4K cinematic reels & videography by Nikunj Sindhwad. 15+ years, 2000+ happy clients. Modern Vision, Timeless Memories." />
+        <meta property="og:description" content="Mumbai's best photography studio – wedding, pre-wedding, portrait & candid photography. 4K cinematic reels & videography by Nikunj Sindhwad & Kunj Sindhwad. 15+ years, 2000+ happy clients. Modern Vision, Timeless Memories." />
         <meta property="og:image" content="https://krishnacreationphotography.com/photos/Wedding/01.webp" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="800" />
@@ -314,7 +314,7 @@ const Home: React.FC = () => {
             { src: '/photos/Wedding/05.webp', alt: 'Wedding photography Mumbai – bride and groom captured by Krishna Creation' },
             { src: '/photos/Pre-Wedding/02.webp', alt: 'Pre-wedding photography shoot Mumbai by Krishna Creation' },
             { src: '/photos/Wedding/13.webp', alt: 'Candid wedding photography Mumbai – emotional moment by Krishna Creation' },
-            { src: '/photos/Wedding/40.webp', alt: 'Wedding ceremony photography Mumbai by Nikunj Sindhwad' },
+            { src: '/photos/Wedding/40.webp', alt: 'Wedding ceremony photography Mumbai by Nikunj Sindhwad & Kunj Sindhwad' },
             { src: '/photos/Haldi/05.webp', alt: 'Haldi ceremony photography Mumbai – vibrant colours by Krishna Creation' },
           ].map(({ src, alt }, i) => (
             <div key={i} className={`mosaic-item mosaic-item--${i + 1}`}>
