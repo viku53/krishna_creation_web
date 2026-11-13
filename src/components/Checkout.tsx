@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -66,13 +66,26 @@ const Checkout: React.FC = () => {
   const product = state?.product;
   const imageFiles = state?.images ?? [];
   const imageCount = state?.imageCount ?? 0;
-  const previewUrls = state?.previewUrls ?? [];
+  const previewUrls = useMemo<string[]>(() => state?.previewUrls ?? [], [state?.previewUrls]);
   const selectedTheme = state?.selectedTheme;
   const selectedFrame = state?.selectedFrame;
   const selectedSize = state?.selectedSize;
   const selectedSizeDims = state?.selectedSizeDims;
   const quantity = state?.quantity ?? 1;
   const customPrice = state?.customPrice;
+
+  // Revoke preview object URLs when checkout unmounts to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach(url => {
+        try {
+          URL.revokeObjectURL(url);
+        } catch {
+          // ignore
+        }
+      });
+    };
+  }, [previewUrls]);
 
   // ── Form state ─────────────────────────────────────────────────────────────
   const [step, setStep] = useState(0);
@@ -88,10 +101,26 @@ const Checkout: React.FC = () => {
   const [orderId] = useState(genOrderId);
   const [showUnavailable, setShowUnavailable] = useState(false);
 
+  // ── Price ──────────────────────────────────────────────────────────────────
+  const basePrice = customPrice ?? (product ? parseInt(product.price.replace(/[^\d]/g, '')) : 499);
+  const deliveryFee = basePrice >= 999 ? 0 : 49;
+  const totalPrice = basePrice + deliveryFee;
+  const unitPrice = quantity > 0 ? Math.round(basePrice / quantity) : basePrice;
+  const variant = selectedTheme || selectedFrame || (selectedSize ? `${selectedSize}${selectedSizeDims ? ` (${selectedSizeDims})` : ''}` : undefined);
+
   // ── Track Step 0 on mount ──────────────────────────────────────────────────
   useEffect(() => {
-    trackCheckoutStep('review', 0);
-  }, []);
+    if (product) {
+      trackCheckoutStep('review', 0, {
+        productId: product.id,
+        productName: product.title,
+        totalAmount: totalPrice,
+        unitPrice,
+        quantity,
+        variant,
+      });
+    }
+  }, [product, totalPrice, unitPrice, quantity, variant]);
 
   // ── Prevent refresh on Place Order step ────────────────────────────────────
   useEffect(() => {
@@ -128,16 +157,18 @@ const Checkout: React.FC = () => {
     };
   }, [step, placing]);
 
-  // ── Price ──────────────────────────────────────────────────────────────────
-  const basePrice = customPrice ?? (product ? parseInt(product.price.replace(/[^\d]/g, '')) : 499);
-  const deliveryFee = basePrice >= 999 ? 0 : 49;
-  const totalPrice = basePrice + deliveryFee;
-
   // ── Step helpers ───────────────────────────────────────────────────────────
   const goNext = () => {
     const nextStep = Math.min(step + 1, STEPS.length - 1);
     setStep(nextStep);
-    trackCheckoutStep(STEPS[nextStep].key, nextStep);
+    trackCheckoutStep(STEPS[nextStep].key, nextStep, {
+      productId: product?.id,
+      productName: product?.title,
+      totalAmount: totalPrice,
+      unitPrice,
+      quantity,
+      variant,
+    });
   };
   const goBack = () => setStep(s => Math.max(s - 1, 0));
 
@@ -146,7 +177,7 @@ const Checkout: React.FC = () => {
     if (!product) return;
     setPlacing(true);
 
-    trackPlaceOrder(orderId, product.title, totalPrice);
+    trackPlaceOrder(orderId, product.title, totalPrice, product.id, quantity, variant);
 
     try {
       // 1. Upload images to Google Drive (non-blocking, best-effort)
@@ -194,7 +225,13 @@ const Checkout: React.FC = () => {
 
     setPlacing(false);
     setStep(2); // Done step
-    trackOrderConfirmation(orderId, product.title, totalPrice);
+    trackOrderConfirmation(orderId, product.title, totalPrice, {
+      productId: product.id,
+      unitPrice,
+      quantity,
+      shippingFee: deliveryFee,
+      variant,
+    });
   };
 
   const hasCustomisation = selectedTheme || selectedFrame || selectedSize;

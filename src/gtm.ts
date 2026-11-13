@@ -85,17 +85,81 @@ export function trackSocialClick(platform: string, location: string) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 6. INSTANT PRINTING – PRODUCT EVENTS
+// 6. INSTANT PRINTING – GA4 ECOMMERCE & PRODUCT EVENTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/** Product detail page viewed (Standard GA4 view_item event) */
-export function trackViewItem(productId: string, productName: string, price: string) {
-  push({ event: 'view_item', product_id: productId, product_name: productName, product_price: price });
+/** Parse any price string or number (e.g., "₹399", "1234", "₹ Based on size") into a clean number */
+export function parsePrice(price: string | number | undefined | null): number {
+  if (price === undefined || price === null) return 0;
+  if (typeof price === 'number') return isNaN(price) ? 0 : price;
+  const cleaned = price.replace(/[^0-9.]/g, '');
+  const parsed = parseFloat(cleaned);
+  return isNaN(parsed) ? 0 : parsed;
 }
 
-/** Product card clicked on the listing page */
-export function trackProductClick(productId: string, productName: string) {
-  push({ event: 'product_click', product_id: productId, product_name: productName });
+/** Push an ecommerce event according to official GA4 / GTM specifications */
+function pushEcommerce(event: string, ecommerceData: Record<string, unknown>) {
+  // Clear the previous ecommerce object before pushing a new one (per GA4 best practices)
+  push({ ecommerce: null });
+  push({
+    event,
+    ecommerce: ecommerceData,
+  });
+}
+
+export interface GA4Item {
+  item_id: string;
+  item_name: string;
+  price: number;
+  quantity?: number;
+  item_category?: string;
+  item_variant?: string;
+  currency?: string;
+}
+
+/** Product detail page viewed (Standard GA4 view_item event) */
+export function trackViewItem(
+  productId: string,
+  productName: string,
+  price: string | number,
+  category = 'Instant Printing'
+) {
+  const numericPrice = parsePrice(price);
+  pushEcommerce('view_item', {
+    currency: 'INR',
+    value: numericPrice,
+    items: [
+      {
+        item_id: productId,
+        item_name: productName,
+        item_category: category,
+        price: numericPrice,
+        quantity: 1,
+      },
+    ],
+  });
+}
+
+/** Product card clicked on the listing page (GA4 select_item) */
+export function trackProductClick(
+  productId: string,
+  productName: string,
+  price?: string | number,
+  category = 'Instant Printing'
+) {
+  const numericPrice = price !== undefined ? parsePrice(price) : undefined;
+  pushEcommerce('select_item', {
+    item_list_id: 'instant_printing_products',
+    item_list_name: 'Instant Printing Products',
+    items: [
+      {
+        item_id: productId,
+        item_name: productName,
+        item_category: category,
+        ...(numericPrice !== undefined ? { price: numericPrice } : {}),
+      },
+    ],
+  });
 }
 
 /** Product detail page — photo upload */
@@ -133,38 +197,155 @@ export function trackQuantityChange(quantity: number) {
   push({ event: 'quantity_change', quantity });
 }
 
-/** Product detail — "Place Order · ₹X" CTA click → navigates to checkout */
-export function trackAddToCart(productId: string, productName: string, price: string) {
-  push({ event: 'add_to_cart', product_id: productId, product_name: productName, product_price: price });
+/** Product detail — "Place Order · ₹X" CTA click → navigates to checkout (Standard GA4 add_to_cart) */
+export function trackAddToCart(
+  productId: string,
+  productName: string,
+  price: string | number,
+  quantity = 1,
+  variant?: string,
+  category = 'Instant Printing'
+) {
+  const unitPrice = parsePrice(price);
+  const totalValue = unitPrice * quantity;
+  pushEcommerce('add_to_cart', {
+    currency: 'INR',
+    value: totalValue,
+    items: [
+      {
+        item_id: productId,
+        item_name: productName,
+        item_category: category,
+        ...(variant ? { item_variant: variant } : {}),
+        price: unitPrice,
+        quantity,
+      },
+    ],
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 7. CHECKOUT EVENTS
+// 7. CHECKOUT EVENTS (Standard GA4 begin_checkout & purchase)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/** Checkout step transitions */
-export function trackCheckoutStep(stepName: string, stepIndex: number) {
-  push({ event: 'checkout_step', checkout_step_name: stepName, checkout_step_index: stepIndex });
+/** Standard GA4 begin_checkout */
+export function trackBeginCheckout(
+  productId: string,
+  productName: string,
+  totalAmount: number,
+  unitPrice?: number,
+  quantity = 1,
+  variant?: string,
+  category = 'Instant Printing'
+) {
+  const itemPrice = unitPrice ?? (quantity > 0 ? Math.round(totalAmount / quantity) : totalAmount);
+  pushEcommerce('begin_checkout', {
+    currency: 'INR',
+    value: totalAmount,
+    items: [
+      {
+        item_id: productId,
+        item_name: productName,
+        item_category: category,
+        ...(variant ? { item_variant: variant } : {}),
+        price: itemPrice,
+        quantity,
+      },
+    ],
+  });
+}
+
+/** Checkout step transitions (triggers begin_checkout on step 0 and custom step tracking) */
+export function trackCheckoutStep(
+  stepName: string,
+  stepIndex: number,
+  context?: {
+    productId?: string;
+    productName?: string;
+    totalAmount?: number;
+    unitPrice?: number;
+    quantity?: number;
+    variant?: string;
+  }
+) {
+  if (stepIndex === 0 && context?.productId && context?.productName && context?.totalAmount !== undefined) {
+    trackBeginCheckout(
+      context.productId,
+      context.productName,
+      context.totalAmount,
+      context.unitPrice,
+      context.quantity ?? 1,
+      context.variant
+    );
+  }
+
+  push({
+    event: 'checkout_step',
+    checkout_step_name: stepName,
+    checkout_step_index: stepIndex,
+    currency: 'INR',
+    ...(context?.totalAmount !== undefined ? { value: context.totalAmount } : {}),
+  });
 }
 
 /** "Place Order" button clicked */
-export function trackPlaceOrder(orderId: string, productName: string, totalAmount: number) {
+export function trackPlaceOrder(
+  orderId: string,
+  productName: string,
+  totalAmount: number,
+  productId?: string,
+  quantity = 1,
+  variant?: string
+) {
   push({
     event: 'place_order',
     order_id: orderId,
     product_name: productName,
     order_total: totalAmount,
+    value: totalAmount,
+    currency: 'INR',
+    ...(productId ? { product_id: productId } : {}),
+    quantity,
+    ...(variant ? { variant } : {}),
   });
 }
 
-/** Order confirmed (step 2 — success screen) */
-export function trackOrderConfirmation(orderId: string, productName: string, totalAmount: number) {
-  push({
-    event: 'purchase',
-    order_id: orderId,
-    product_name: productName,
-    order_total: totalAmount,
+/** Order confirmed — Standard GA4 purchase schema */
+export function trackOrderConfirmation(
+  orderId: string,
+  productName: string,
+  totalAmount: number,
+  options?: {
+    productId?: string;
+    unitPrice?: number;
+    quantity?: number;
+    shippingFee?: number;
+    variant?: string;
+    category?: string;
+  }
+) {
+  const quantity = options?.quantity ?? 1;
+  const shipping = options?.shippingFee ?? (totalAmount >= 999 ? 0 : 49);
+  const unitPrice =
+    options?.unitPrice ?? (quantity > 0 ? Math.round((totalAmount - shipping) / quantity) : totalAmount);
+  const category = options?.category ?? 'Instant Printing';
+
+  pushEcommerce('purchase', {
+    transaction_id: orderId,
+    value: totalAmount,
     currency: 'INR',
+    tax: 0,
+    shipping,
+    items: [
+      {
+        item_id: options?.productId ?? 'order-item',
+        item_name: productName,
+        item_category: category,
+        ...(options?.variant ? { item_variant: options.variant } : {}),
+        price: unitPrice,
+        quantity,
+      },
+    ],
   });
 }
 

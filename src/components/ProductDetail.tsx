@@ -450,6 +450,27 @@ const ProductDetail: React.FC = () => {
   // ── Image state ────────────────────────────────────────────────
   const [images, setImages] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const previewUrlsRef = useRef<string[]>([]);
+  const navigatingToCheckoutRef = useRef(false);
+
+  useEffect(() => {
+    previewUrlsRef.current = previewUrls;
+  }, [previewUrls]);
+
+  // Cleanup object URLs on unmount (unless handed over to Checkout)
+  useEffect(() => {
+    return () => {
+      if (!navigatingToCheckoutRef.current) {
+        previewUrlsRef.current.forEach(url => {
+          try {
+            URL.revokeObjectURL(url);
+          } catch {
+            // ignore
+          }
+        });
+      }
+    };
+  }, []);
 
   // ── Mug theme state ────────────────────────────────────────────
   const [selectedTheme, setSelectedTheme] = useState<MugTheme | null>(null);
@@ -464,9 +485,10 @@ const ProductDetail: React.FC = () => {
   // Track product view (GA4 standard view_item)
   useEffect(() => {
     if (product) {
-      trackViewItem(product.id, product.title, product.price);
+      const priceToTrack = id === 'photo-print' && selectedSize ? selectedSize.price : product.price;
+      trackViewItem(product.id, product.title, priceToTrack);
     }
-  }, [product]);
+  }, [product, id, selectedSize]);
 
   // Limit: mug with theme = 1 photo; mug without theme = 3; frame = 1; others = 3
   const maxImages = useMemo(() => {
@@ -479,17 +501,32 @@ const ProductDetail: React.FC = () => {
     useMediaModal(previewUrls.map((url, i) => ({ url, caption: `Photo ${i + 1} of ${previewUrls.length}` })));
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return;
-    const combined = [...images, ...Array.from(e.target.files)].slice(0, maxImages);
-    setImages(combined);
-    setPreviewUrls(combined.map(f => URL.createObjectURL(f)));
+    if (!e.target.files || e.target.files.length === 0) return;
+    const remainingSlots = maxImages - images.length;
+    if (remainingSlots <= 0) return;
+
+    const newFiles = Array.from(e.target.files).slice(0, remainingSlots);
+    const newUrls = newFiles.map(f => URL.createObjectURL(f));
+
+    setImages(prev => [...prev, ...newFiles]);
+    setPreviewUrls(prev => [...prev, ...newUrls]);
     if (fileInputRef.current) fileInputRef.current.value = '';
-    if (id) trackPhotoUpload(id, combined.length);
+    if (id) trackPhotoUpload(id, images.length + newFiles.length);
   };
 
   const removeImage = (idx: number) => {
+    setPreviewUrls(prev => {
+      const urlToRemove = prev[idx];
+      if (urlToRemove) {
+        try {
+          URL.revokeObjectURL(urlToRemove);
+        } catch {
+          // ignore
+        }
+      }
+      return prev.filter((_, i) => i !== idx);
+    });
     setImages(prev => prev.filter((_, i) => i !== idx));
-    setPreviewUrls(prev => prev.filter((_, i) => i !== idx));
     if (id) trackPhotoRemove(id);
   };
 
@@ -641,10 +678,19 @@ const ProductDetail: React.FC = () => {
               onSelect={theme => {
                 setSelectedTheme(theme);
                 trackThemeSelect(theme?.name ?? null);
-                // Clear extra images if switching to theme mode
+                // Clear extra images and revoke their URLs if switching to theme mode
                 if (theme && images.length > 1) {
+                  setPreviewUrls(prev => {
+                    prev.slice(1).forEach(url => {
+                      try {
+                        URL.revokeObjectURL(url);
+                      } catch {
+                        // ignore
+                      }
+                    });
+                    return [prev[0]];
+                  });
                   setImages(prev => [prev[0]]);
-                  setPreviewUrls(prev => [prev[0]]);
                 }
               }}
             />
@@ -767,7 +813,12 @@ const ProductDetail: React.FC = () => {
             className={`pdp-cta-btn ${!canCheckout() ? 'pdp-cta-btn--disabled' : ''}`}
             disabled={!canCheckout()}
             onClick={() => {
-              if (product) trackAddToCart(product.id, product.title, ctaPrice);
+              if (product) {
+                const unitPrice = printPrice !== null ? selectedSize?.price ?? 0 : product.price;
+                const variant = selectedTheme?.name || selectedFrame?.name || selectedSize?.label;
+                trackAddToCart(product.id, product.title, unitPrice, quantity, variant);
+              }
+              navigatingToCheckoutRef.current = true;
               navigate('/checkout', {
                 state: {
                   product,
@@ -781,7 +832,7 @@ const ProductDetail: React.FC = () => {
                   quantity,
                   customPrice: printPrice ?? undefined,
                 },
-              })
+              });
             }}
           >
             <PackageCheck size={18} />
