@@ -225,23 +225,28 @@ export function trackAddToCart(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 7. CHECKOUT EVENTS (Standard GA4 begin_checkout & purchase)
+// 7. CHECKOUT & ORDER EVENTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/** Standard GA4 begin_checkout */
+/**
+ * Standard GA4 begin_checkout
+ * Uses item subtotal for 'value' and reports shipping separately to avoid double-counting revenue.
+ */
 export function trackBeginCheckout(
   productId: string,
   productName: string,
-  totalAmount: number,
+  subtotal: number,
   unitPrice?: number,
   quantity = 1,
+  shippingFee = 0,
   variant?: string,
   category = 'Instant Printing'
 ) {
-  const itemPrice = unitPrice ?? (quantity > 0 ? Math.round(totalAmount / quantity) : totalAmount);
+  const itemPrice = unitPrice ?? (quantity > 0 ? Math.round(subtotal / quantity) : subtotal);
   pushEcommerce('begin_checkout', {
     currency: 'INR',
-    value: totalAmount,
+    value: subtotal, // Item subtotal (excluding shipping)
+    shipping: shippingFee,
     items: [
       {
         item_id: productId,
@@ -262,19 +267,21 @@ export function trackCheckoutStep(
   context?: {
     productId?: string;
     productName?: string;
-    totalAmount?: number;
+    subtotal?: number;
     unitPrice?: number;
     quantity?: number;
+    shippingFee?: number;
     variant?: string;
   }
 ) {
-  if (stepIndex === 0 && context?.productId && context?.productName && context?.totalAmount !== undefined) {
+  if (stepIndex === 0 && context?.productId && context?.productName && context?.subtotal !== undefined) {
     trackBeginCheckout(
       context.productId,
       context.productName,
-      context.totalAmount,
+      context.subtotal,
       context.unitPrice,
       context.quantity ?? 1,
+      context.shippingFee ?? 0,
       context.variant
     );
   }
@@ -284,7 +291,8 @@ export function trackCheckoutStep(
     checkout_step_name: stepName,
     checkout_step_index: stepIndex,
     currency: 'INR',
-    ...(context?.totalAmount !== undefined ? { value: context.totalAmount } : {}),
+    ...(context?.subtotal !== undefined ? { value: context.subtotal } : {}),
+    ...(context?.shippingFee !== undefined ? { shipping: context.shippingFee } : {}),
   });
 }
 
@@ -292,7 +300,8 @@ export function trackCheckoutStep(
 export function trackPlaceOrder(
   orderId: string,
   productName: string,
-  totalAmount: number,
+  subtotal: number,
+  shippingFee = 0,
   productId?: string,
   quantity = 1,
   variant?: string
@@ -301,8 +310,9 @@ export function trackPlaceOrder(
     event: 'place_order',
     order_id: orderId,
     product_name: productName,
-    order_total: totalAmount,
-    value: totalAmount,
+    value: subtotal, // Item subtotal
+    shipping: shippingFee,
+    total_amount: subtotal + shippingFee,
     currency: 'INR',
     ...(productId ? { product_id: productId } : {}),
     quantity,
@@ -310,11 +320,62 @@ export function trackPlaceOrder(
   });
 }
 
-/** Order confirmed — Standard GA4 purchase schema */
-export function trackOrderConfirmation(
+/**
+ * Order submission event (for unpaid / cash on delivery / pending-payment orders).
+ * Pushes custom 'order_submitted' event with item subtotal and separate shipping,
+ * without overstating completed financial sales in GA4 purchase reports.
+ */
+export function trackOrderSubmission(
   orderId: string,
   productName: string,
-  totalAmount: number,
+  subtotal: number,
+  options?: {
+    productId?: string;
+    unitPrice?: number;
+    quantity?: number;
+    shippingFee?: number;
+    variant?: string;
+    category?: string;
+    paymentStatus?: string;
+  }
+) {
+  const quantity = options?.quantity ?? 1;
+  const shipping = options?.shippingFee ?? (subtotal >= 999 ? 0 : 49);
+  const unitPrice = options?.unitPrice ?? (quantity > 0 ? Math.round(subtotal / quantity) : subtotal);
+  const category = options?.category ?? 'Instant Printing';
+
+  push({
+    event: 'order_submitted',
+    order_id: orderId,
+    product_name: productName,
+    product_id: options?.productId ?? 'order-item',
+    value: subtotal, // Item subtotal (revenue before delivery)
+    shipping,
+    total_amount: subtotal + shipping,
+    currency: 'INR',
+    payment_status: options?.paymentStatus ?? 'pending_payment',
+    items: [
+      {
+        item_id: options?.productId ?? 'order-item',
+        item_name: productName,
+        item_category: category,
+        ...(options?.variant ? { item_variant: options.variant } : {}),
+        price: unitPrice,
+        quantity,
+      },
+    ],
+  });
+}
+
+/**
+ * Standard GA4 purchase schema.
+ * Send ONLY after payment is confirmed (e.g. online payment gateway success or verified payment).
+ * Uses item subtotal for 'value' and reports shipping separately to avoid double-counting revenue.
+ */
+export function trackPurchase(
+  orderId: string,
+  productName: string,
+  subtotal: number,
   options?: {
     productId?: string;
     unitPrice?: number;
@@ -325,14 +386,14 @@ export function trackOrderConfirmation(
   }
 ) {
   const quantity = options?.quantity ?? 1;
-  const shipping = options?.shippingFee ?? (totalAmount >= 999 ? 0 : 49);
+  const shipping = options?.shippingFee ?? (subtotal >= 999 ? 0 : 49);
   const unitPrice =
-    options?.unitPrice ?? (quantity > 0 ? Math.round((totalAmount - shipping) / quantity) : totalAmount);
+    options?.unitPrice ?? (quantity > 0 ? Math.round(subtotal / quantity) : subtotal);
   const category = options?.category ?? 'Instant Printing';
 
   pushEcommerce('purchase', {
     transaction_id: orderId,
-    value: totalAmount,
+    value: subtotal, // Item subtotal (excluding shipping to prevent double-counting)
     currency: 'INR',
     tax: 0,
     shipping,
@@ -348,6 +409,9 @@ export function trackOrderConfirmation(
     ],
   });
 }
+
+/** Alias for trackPurchase for backward compatibility */
+export const trackOrderConfirmation = trackPurchase;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 8. TRACK ORDER PAGE

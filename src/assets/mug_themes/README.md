@@ -11,7 +11,7 @@ Examples:
 - `love.webp` → "Love"
 - `floral_pattern.webp` → "Floral Pattern"
 
-The theme image should have a clearx₹ly visible **empty/blank area on the LEFT side** where the user's uploaded photo will be placed.
+The theme image should have a clearly visible **empty/blank area on the LEFT side** where the user's uploaded photo will be placed.
 
 ## How it Works
 1. User picks a theme → it wraps around the 3D mug preview

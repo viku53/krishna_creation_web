@@ -27,7 +27,7 @@ import { uploadOrderToDrive } from './uploadToDrive';
 import {
   trackCheckoutStep,
   trackPlaceOrder,
-  trackOrderConfirmation,
+  trackOrderSubmission,
   trackContactInfoClick,
 } from '../gtm';
 
@@ -114,13 +114,14 @@ const Checkout: React.FC = () => {
       trackCheckoutStep('review', 0, {
         productId: product.id,
         productName: product.title,
-        totalAmount: totalPrice,
+        subtotal: basePrice,
         unitPrice,
         quantity,
+        shippingFee: deliveryFee,
         variant,
       });
     }
-  }, [product, totalPrice, unitPrice, quantity, variant]);
+  }, [product, basePrice, unitPrice, quantity, deliveryFee, variant]);
 
   // ── Prevent refresh on Place Order step ────────────────────────────────────
   useEffect(() => {
@@ -164,9 +165,10 @@ const Checkout: React.FC = () => {
     trackCheckoutStep(STEPS[nextStep].key, nextStep, {
       productId: product?.id,
       productName: product?.title,
-      totalAmount: totalPrice,
+      subtotal: basePrice,
       unitPrice,
       quantity,
+      shippingFee: deliveryFee,
       variant,
     });
   };
@@ -177,7 +179,7 @@ const Checkout: React.FC = () => {
     if (!product) return;
     setPlacing(true);
 
-    trackPlaceOrder(orderId, product.title, totalPrice, product.id, quantity, variant);
+    trackPlaceOrder(orderId, product.title, basePrice, deliveryFee, product.id, quantity, variant);
 
     try {
       // 1. Upload images to Google Drive (non-blocking, best-effort)
@@ -225,12 +227,13 @@ const Checkout: React.FC = () => {
 
     setPlacing(false);
     setStep(2); // Done step
-    trackOrderConfirmation(orderId, product.title, totalPrice, {
+    trackOrderSubmission(orderId, product.title, basePrice, {
       productId: product.id,
       unitPrice,
       quantity,
       shippingFee: deliveryFee,
       variant,
+      paymentStatus: 'pending_payment',
     });
   };
 
