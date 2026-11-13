@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { Film, Loader2, CloudOff, Instagram, Volume2, VolumeX, AlertCircle } from "lucide-react";
 import { useDriveVideos } from "./useDriveVideos";
 import type { DriveVideoItem } from "./useDriveVideos";
+import { trackMediaView, trackOutboundClick } from "../gtm";
 
 const REELS_FOLDER_ID = import.meta.env.VITE_GOOGLE_DRIVE_REELS_FOLDER_ID as string;
 
@@ -55,6 +56,7 @@ const ReelEmpty: React.FC<{ error?: string | null }> = ({ error }) => (
           rel="noopener noreferrer"
           className="reel-ctrl-btn reel-ctrl-btn--play"
           style={{ display: 'flex', alignItems: 'center', gap: '6px', textDecoration: 'none' }}
+          onClick={() => trackOutboundClick("https://www.instagram.com/krishna_creation10/reels", "Watch on Instagram")}
         >
           <Instagram size={16} /> Watch on Instagram
         </a>
@@ -92,19 +94,24 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
   const reel = reelList[current];
 
   // ── Navigate ───────────────────────────────────────────────────────────────
+  const selectReel = useCallback((idx: number) => {
+    setCurrent(idx);
+    setIsPlaying(false);
+    setMode('video');
+    trackMediaView('reel');
+  }, []);
+
   const goNext = useCallback(() => {
-    if (current < reelList.length - 1) setCurrent(c => c + 1);
+    if (current < reelList.length - 1) selectReel(current + 1);
     else window.open("https://www.instagram.com/krishna_creation10/reels", "_blank");
-  }, [current, reelList.length]);
+  }, [current, reelList.length, selectReel]);
 
   const goPrev = useCallback(() => {
-    if (current > 0) setCurrent(c => c - 1);
-  }, [current]);
+    if (current > 0) selectReel(current - 1);
+  }, [current, selectReel]);
 
-  // Reset state on reel change
+  // Load video on reel change
   useEffect(() => {
-    setIsPlaying(false);
-    setMode('video');   // always try native video first for each new reel
     const vid = videoRef.current;
     if (vid) vid.load();
   }, [current]);
@@ -139,7 +146,6 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [goNext, goPrev, toggleMute]);
 
   // ── Wheel ──────────────────────────────────────────────────────────────────
@@ -356,7 +362,7 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
               <div
                 key={i}
                 className={`reel-dot ${i === current ? 'reel-dot--active' : ''}`}
-                onClick={() => setCurrent(i)}
+                onClick={() => selectReel(i)}
                 style={{ cursor: 'pointer' }}
               />
             ))}

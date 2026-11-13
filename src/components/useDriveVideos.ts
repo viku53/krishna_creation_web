@@ -95,32 +95,40 @@ async function fetchDriveVideos(folderId: string): Promise<DriveVideoItem[]> {
 
 // ── Hook ─────────────────────────────────────────────────────────────────────
 export function useDriveVideos(folderId: string | undefined) {
-  const [videos, setVideos] = useState<DriveVideoItem[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [videos, setVideos] = useState<DriveVideoItem[]>(() => {
+    if (!folderId || folderId.trim() === '') return [];
+    return cacheGet<DriveVideoItem[]>(cacheKey(folderId)) ?? [];
+  });
+  const [loading, setLoading] = useState<boolean>(() => {
+    if (!folderId || folderId.trim() === '') return false;
+    return !cacheGet<DriveVideoItem[]>(cacheKey(folderId));
+  });
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!folderId || folderId.trim() === '') {
-      setVideos([]);
-      setLoading(false);
       return;
     }
 
-    // Show cached data instantly while still showing loading = false
-    const cached = cacheGet<DriveVideoItem[]>(cacheKey(folderId));
-    if (cached) {
-      setVideos(cached);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
+    let cancelled = false;
 
     fetchDriveVideos(folderId)
-      .then(setVideos)
-      .catch(err => setError(err.message ?? 'Failed to load videos'))
-      .finally(() => setLoading(false));
+      .then(items => {
+        if (!cancelled) {
+          setVideos(items);
+          setLoading(false);
+        }
+      })
+      .catch(err => {
+        if (!cancelled) {
+          setError(err.message ?? 'Failed to load videos');
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [folderId]);
 
   return { videos, loading, error };

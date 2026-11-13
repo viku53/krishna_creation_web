@@ -5,16 +5,23 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <!-- ── Google Tag Manager ─────────────────────────────────────── -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+  </script>
+  <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-P2M8X7B8"></script>
+  <!-- ── End Google Tag Manager ─────────────────────────────────── -->
+
   <!-- ── Favicon & Touch Icons ─────────────────────────────────────── -->
   <link rel="icon" type="image/png" href="/logo.png" />
   <link rel="apple-touch-icon" href="/logo.png" />
   <link rel="shortcut icon" href="/logo.png" />
 
   <!-- ── Performance: Preconnect to critical origins ───────────────── -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preconnect" href="https://www.google-analytics.com" />
-  <link rel="dns-prefetch" href="https://www.google.com" />
+  <link rel="preconnect" href="https://www.googletagmanager.com" />
+  <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
 
   <!-- ── Fallback Title & Description (overridden per-page by react-helmet-async) -->
   <title>Krishna Creation | Best Photography – Wedding, Pre-Wedding & Event Photography</title>
@@ -39,6 +46,10 @@
 
   <!-- ── Canonical (fallback — each page overrides via Helmet) ─────── -->
   <link rel="canonical" href="https://krishnacreationphotography.com/" />
+
+  <!-- ── Agentic Browsing & Resource Discovery (ARD / llms.txt) ──────── -->
+  <link rel="ard" type="application/json" href="/.well-known/ard.json" />
+  <link rel="alternate" type="text/markdown" href="/llms.txt" title="LLM Context" />
 
   <!-- ── Open Graph — global/fallback values ───────────────────────── -->
   <meta property="og:type" content="website" />
@@ -343,6 +354,10 @@
 </head>
 
 <body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P2M8X7B8"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>

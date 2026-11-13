@@ -7,6 +7,7 @@ import {
 import { getOrderStatus, updateOrderStatus } from './uploadToDrive';
 import { Link } from 'react-router-dom';
 import type { OrderStatus } from './uploadToDrive';
+import { trackOrderSearch, trackOrderSearchResult } from '../gtm';
 
 // ── Order stages ──────────────────────────────────────────────────────────────
 const STAGES = [
@@ -93,6 +94,7 @@ const TrackOrder: React.FC = () => {
     e.preventDefault();
     const id = orderId.trim().toUpperCase();
     if (!id) return;
+    trackOrderSearch(id);
     setLoading(true);
     setOrder(null);
     setNotFound(false);
@@ -100,8 +102,10 @@ const TrackOrder: React.FC = () => {
     const result = await getOrderStatus(id);
     if (result) {
       setOrder(result);
+      trackOrderSearchResult(id, true, result.status);
     } else {
       setNotFound(true);
+      trackOrderSearchResult(id, false);
     }
     setLoading(false);
   };

@@ -1,5 +1,6 @@
 import { Home, Film, Camera, Video, ShoppingCart, Contact } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { trackBottomNavClick } from '../gtm';
 
 const navLinks = [
   { to: '/', label: 'Home', icon: <Home size={24} /> },
@@ -20,7 +21,8 @@ function BottomNav({ scrollToTop }: BottomNavProps) {
         <Link
           key={link.to}
           to={link.to}
-          onClick={() => { setTimeout(scrollToTop, 100); }}
+          aria-label={link.label}
+          onClick={() => { trackBottomNavClick(link.label); setTimeout(scrollToTop, 100); }}
           className={`group flex flex-col items-center justify-center flex-1 nav--item ${location.pathname === link.to ? 'nav--item__active' : 'text-gray-500 hover:text-rose-400'} transition-all`}
         >
           {link.icon}

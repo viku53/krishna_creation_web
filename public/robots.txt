@@ -1,7 +1,10 @@
 User-agent: *
 Allow: /
 Disallow: /checkout
-Disallow: /*.json$
+
+# AI Discovery & Documentation
+Allow: /llms.txt
+Allow: /.well-known/
 
 # Sitemaps
 Sitemap: https://krishnacreationphotography.com/sitemap.xml

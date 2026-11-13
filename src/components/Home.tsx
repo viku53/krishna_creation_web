@@ -2,6 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { Camera, Film, Video, ShoppingBag, Mail, Phone, Instagram, ChevronDown, ArrowRight, Star, Sparkles, Users, Printer, Heart, CheckCircle } from 'lucide-react';
+import {
+  trackHeroCTA,
+  trackServiceClick,
+  trackPortfolioClick,
+  trackEnquiryCTA,
+  trackSocialClick,
+} from '../gtm';
 
 // ─── Animated counter hook ────────────────────────────────────────────────────
 function useCountUp(target: number, duration = 1800, start = false) {
@@ -29,10 +36,11 @@ function useInView(threshold = 0.2) {
       ([entry]) => { if (entry.isIntersecting) setInView(true); },
       { threshold }
     );
-    if (ref.current) observer.observe(ref.current);
+    const el = ref.current;
+    if (el) observer.observe(el);
     return () => observer.disconnect();
   }, [threshold]);
-  return { ref, inView };
+  return [ref, inView] as const;
 }
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -145,14 +153,10 @@ const Home: React.FC = () => {
   const isDesktop = useIsDesktop();
   const heroPhotos = isDesktop ? heroPhotosDesktop : heroPhotosMobile;
   const [heroIndex, setHeroIndex] = useState(0);
-  const statsRef = useInView(0.3);
-  const servicesRef = useInView(0.1);
-  const testimonialRef = useInView(0.2);
-
-  // Reset index when switching sets so we don't go out of bounds
-  useEffect(() => {
-    setHeroIndex(0);
-  }, [isDesktop]);
+  const activeHeroIndex = heroPhotos.length > 0 ? heroIndex % heroPhotos.length : 0;
+  const [statsSectionRef, statsInView] = useInView(0.3);
+  const [servicesSectionRef] = useInView(0.1);
+  const [testimonialSectionRef, testimonialsInView] = useInView(0.2);
 
   // Auto-cycle hero
   useEffect(() => {
@@ -197,7 +201,7 @@ const Home: React.FC = () => {
             className="hero-bg"
             style={{
               backgroundImage: `url(${src})`,
-              opacity: i === heroIndex ? 1 : 0,
+              opacity: i === activeHeroIndex ? 1 : 0,
               transition: 'opacity 1.2s cubic-bezier(0.4,0,0.2,1)',
             }}
             aria-hidden="true"
@@ -235,34 +239,34 @@ const Home: React.FC = () => {
           </p>
 
           <div className="hero-cta">
-            <Link to="/photos" className="hero-btn-primary">
+            <Link to="/photos" className="hero-btn-primary" aria-label="View Portfolio" onClick={() => trackHeroCTA('View Portfolio')}>
               View Portfolio
               <ArrowRight size={18} />
             </Link>
-            <Link to="/contact" onClick={() => setTimeout(() => window.location.hash = "contact-us", 100)} className="hero-btn-secondary">
+            <Link to="/contact" aria-label="Book a Session" onClick={() => { trackHeroCTA('Book a Session'); setTimeout(() => window.location.hash = "contact-us", 100); }} className="hero-btn-secondary">
               Book a Session
             </Link>
           </div>
         </div>
 
         {/* Scroll hint */}
-        <div className="hero-scroll-hint" onClick={() => servicesRef.ref.current?.scrollIntoView({ behavior: 'smooth' })}>
+        <div className="hero-scroll-hint" onClick={() => servicesSectionRef.current?.scrollIntoView({ behavior: 'smooth' })}>
           <span>Scroll</span>
           <ChevronDown size={16} className="animate-bounce" />
         </div>
       </section>
 
       {/* ── STATS ────────────────────────────────────────────────────────── */}
-      <section className="stats-section justify-center" ref={statsRef.ref} aria-label="Our stats">
+      <section className="stats-section justify-center" ref={statsSectionRef} aria-label="Our stats">
         <div className="stats-grid">
           {stats.map(s => (
-            <StatCard key={s.label} {...s} start={statsRef.inView} />
+            <StatCard key={s.label} {...s} start={statsInView} />
           ))}
         </div>
       </section>
 
       {/* ── SERVICES ─────────────────────────────────────────────────────── */}
-      <section className="services-section" ref={servicesRef.ref} aria-label="Our services">
+      <section className="services-section" ref={servicesSectionRef} aria-label="Our services">
         <div className="section-header">
           <p className="section-eyebrow">What We Do</p>
           <h2 className="section-title">Crafting Every Moment</h2>
@@ -275,8 +279,9 @@ const Home: React.FC = () => {
               to={service.to}
               key={service.title}
               className="service-card"
+              aria-label={`Explore ${service.title} service`}
               style={{ animationDelay: `${i * 0.1}s` }}
-              onClick={() => setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0)}
+              onClick={() => { trackServiceClick(service.title); setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0); }}
             >
               {/* Background image */}
               <div
@@ -324,7 +329,7 @@ const Home: React.FC = () => {
         </div>
 
         <div className="flex justify-center mt-8">
-          <Link to="/photos" className="hero-btn-primary" onClick={() => setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0)}>
+          <Link to="/photos" className="hero-btn-primary" aria-label="See Full Gallery" onClick={() => { trackPortfolioClick(); setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0); }}>
             See Full Gallery <ArrowRight size={18} />
           </Link>
         </div>
@@ -365,7 +370,7 @@ const Home: React.FC = () => {
               <li><CheckCircle size={14} /> Drone aerial shots</li>
               <li><CheckCircle size={14} /> Same-day highlight reels</li>
             </ul>
-            <Link to="/contact" className="wwd-enquiry-btn">
+            <Link to="/contact" className="wwd-enquiry-btn" aria-label="Enquire Now for Photography & Videography" onClick={() => trackEnquiryCTA('Enquire Now')}>
               <Heart size={14} />
               Enquire Now
               <ArrowRight size={14} />
@@ -394,7 +399,7 @@ const Home: React.FC = () => {
               <li><CheckCircle size={14} /> Personalized frames & keychains</li>
               <li><CheckCircle size={14} /> Ready in minutes — take home instantly</li>
             </ul>
-            <Link to="/contact" className="wwd-enquiry-btn wwd-enquiry-btn--amber">
+            <Link to="/contact" className="wwd-enquiry-btn wwd-enquiry-btn--amber" aria-label="Book Instant Printing for Your Event" onClick={() => trackEnquiryCTA('Book for Your Event')}>
               <Sparkles size={14} />
               Book for Your Event
               <ArrowRight size={14} />
@@ -426,7 +431,7 @@ const Home: React.FC = () => {
                 <span className="wwd-stat-label">Happy Clients</span>
               </div>
             </div>
-            <Link to="/contact" className="wwd-enquiry-btn wwd-enquiry-btn--violet">
+            <Link to="/contact" className="wwd-enquiry-btn wwd-enquiry-btn--violet" aria-label="Meet Our Team" onClick={() => trackEnquiryCTA('Meet Our Team')}>
               <Users size={14} />
               Meet Our Team
               <ArrowRight size={14} />
@@ -436,7 +441,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* ── TESTIMONIALS ─────────────────────────────────────────────────── */}
-      <section className="testimonials-section" ref={testimonialRef.ref} aria-label="Testimonials">
+      <section className="testimonials-section" ref={testimonialSectionRef} aria-label="Testimonials">
         <div className="section-header">
           <p className="section-eyebrow">Kind Words</p>
           <h2 className="section-title" style={{ color: '#fff' }}>Love From Our Clients</h2>
@@ -447,7 +452,7 @@ const Home: React.FC = () => {
             <div
               key={t.name}
               className="testimonial-card"
-              style={{ animationDelay: `${i * 0.15}s`, opacity: testimonialRef.inView ? 1 : 0, transform: testimonialRef.inView ? 'translateY(0)' : 'translateY(24px)', transition: `all 0.6s ease ${i * 0.15}s` }}
+              style={{ animationDelay: `${i * 0.15}s`, opacity: testimonialsInView ? 1 : 0, transform: testimonialsInView ? 'translateY(0)' : 'translateY(24px)', transition: `all 0.6s ease ${i * 0.15}s` }}
             >
               <div className="testimonial-stars justify-center">
                 {Array.from({ length: t.stars }).map((_, si) => (
@@ -469,13 +474,13 @@ const Home: React.FC = () => {
           <h2 className="footer-brand-name">Krishna Creation</h2>
           <p className="footer-tagline">Where every frame tells a timeless story.</p>
           <div className="footer-socials">
-            <a href="https://www.instagram.com/krishna_creation10" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="footer-social-btn">
+            <a href="https://www.instagram.com/krishna_creation10" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="footer-social-btn" onClick={() => trackSocialClick('Instagram', 'footer')}>
               <Instagram size={18} />
             </a>
-            <a href={`tel:+${import.meta.env.VITE_CONTACT_NUMBER}`} aria-label="Call us" className="footer-social-btn">
+            <a href={`tel:+${import.meta.env.VITE_CONTACT_NUMBER}`} aria-label="Call us" className="footer-social-btn" onClick={() => trackSocialClick('Phone', 'footer')}>
               <Phone size={18} />
             </a>
-            <a href={`mailto:${import.meta.env.VITE_EMAILJS_TO_EMAIL}`} aria-label="Email us" className="footer-social-btn">
+            <a href={`mailto:${import.meta.env.VITE_EMAILJS_TO_EMAIL}`} aria-label="Email us" className="footer-social-btn" onClick={() => trackSocialClick('Email', 'footer')}>
               <Mail size={18} />
             </a>
           </div>
@@ -497,9 +502,9 @@ const Home: React.FC = () => {
           </div>
           <div className="footer-nav-col">
             <h3 className="footer-nav-heading">Get in Touch</h3>
-            <a href={`tel:+${import.meta.env.VITE_CONTACT_NUMBER}`} className="footer-nav-link">📞 Call Us</a>
-            <a href={`mailto:${import.meta.env.VITE_EMAILJS_TO_EMAIL}`} className="footer-nav-link">✉ Mail Us</a>
-            <a href="https://www.instagram.com/krishna_creation10" target="_blank" rel="noopener noreferrer" className="footer-nav-link">📸 Instagram</a>
+            <a href={`tel:+${import.meta.env.VITE_CONTACT_NUMBER}`} className="footer-nav-link" onClick={() => trackSocialClick('Phone', 'footer_nav')}>📞 Call Us</a>
+            <a href={`mailto:${import.meta.env.VITE_EMAILJS_TO_EMAIL}`} className="footer-nav-link" onClick={() => trackSocialClick('Email', 'footer_nav')}>✉ Mail Us</a>
+            <a href="https://www.instagram.com/krishna_creation10" target="_blank" rel="noopener noreferrer" className="footer-nav-link" onClick={() => trackSocialClick('Instagram', 'footer_nav')}>📸 Instagram</a>
           </div>
         </div>
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Instagram, Mail, Phone, Sparkles } from 'lucide-react';
+import { trackSocialClick } from '../gtm';
 
 const ComingSoon: React.FC = () => {
   return (
@@ -45,13 +46,13 @@ const ComingSoon: React.FC = () => {
 
         {/* Contact Links */}
         <div className="footer-socials">
-          <a href="https://www.instagram.com/krishna_creation10" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="footer-social-btn">
+          <a href="https://www.instagram.com/krishna_creation10" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="footer-social-btn" onClick={() => trackSocialClick('Instagram', 'root_coming_soon')}>
             <Instagram size={18} />
           </a>
-          <a href={`tel:+${import.meta.env.VITE_CONTACT_NUMBER}`} aria-label="Call us" className="footer-social-btn">
+          <a href={`tel:+${import.meta.env.VITE_CONTACT_NUMBER}`} aria-label="Call us" className="footer-social-btn" onClick={() => trackSocialClick('Phone', 'root_coming_soon')}>
             <Phone size={18} />
           </a>
-          <a href={`mailto:${import.meta.env.VITE_EMAILJS_TO_EMAIL}`} aria-label="Email us" className="footer-social-btn">
+          <a href={`mailto:${import.meta.env.VITE_EMAILJS_TO_EMAIL}`} aria-label="Email us" className="footer-social-btn" onClick={() => trackSocialClick('Email', 'root_coming_soon')}>
             <Mail size={18} />
           </a>
         </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -21,9 +21,15 @@ import {
   PackageCheck,
   Search,
 } from 'lucide-react';
-import type { PrintProduct } from './InstantPrinting';
+import type { PrintProduct } from '../data/products';
 import { sendOrderNotification, ENABLE_NOTIFICATIONS } from './sendNotification';
 import { uploadOrderToDrive } from './uploadToDrive';
+import {
+  trackCheckoutStep,
+  trackPlaceOrder,
+  trackOrderSubmission,
+  trackContactInfoClick,
+} from '../gtm';
 
 // ── Steps ─────────────────────────────────────────────────────────────────────
 const STEPS = [
@@ -60,13 +66,26 @@ const Checkout: React.FC = () => {
   const product = state?.product;
   const imageFiles = state?.images ?? [];
   const imageCount = state?.imageCount ?? 0;
-  const previewUrls = state?.previewUrls ?? [];
+  const previewUrls = useMemo<string[]>(() => state?.previewUrls ?? [], [state?.previewUrls]);
   const selectedTheme = state?.selectedTheme;
   const selectedFrame = state?.selectedFrame;
   const selectedSize = state?.selectedSize;
   const selectedSizeDims = state?.selectedSizeDims;
   const quantity = state?.quantity ?? 1;
   const customPrice = state?.customPrice;
+
+  // Revoke preview object URLs when checkout unmounts to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach(url => {
+        try {
+          URL.revokeObjectURL(url);
+        } catch {
+          // ignore
+        }
+      });
+    };
+  }, [previewUrls]);
 
   // ── Form state ─────────────────────────────────────────────────────────────
   const [step, setStep] = useState(0);
@@ -81,6 +100,28 @@ const Checkout: React.FC = () => {
   const [placing, setPlacing] = useState(false);
   const [orderId] = useState(genOrderId);
   const [showUnavailable, setShowUnavailable] = useState(false);
+
+  // ── Price ──────────────────────────────────────────────────────────────────
+  const basePrice = customPrice ?? (product ? parseInt(product.price.replace(/[^\d]/g, '')) : 499);
+  const deliveryFee = basePrice >= 999 ? 0 : 49;
+  const totalPrice = basePrice + deliveryFee;
+  const unitPrice = quantity > 0 ? Math.round(basePrice / quantity) : basePrice;
+  const variant = selectedTheme || selectedFrame || (selectedSize ? `${selectedSize}${selectedSizeDims ? ` (${selectedSizeDims})` : ''}` : undefined);
+
+  // ── Track Step 0 on mount ──────────────────────────────────────────────────
+  useEffect(() => {
+    if (product) {
+      trackCheckoutStep('review', 0, {
+        productId: product.id,
+        productName: product.title,
+        subtotal: basePrice,
+        unitPrice,
+        quantity,
+        shippingFee: deliveryFee,
+        variant,
+      });
+    }
+  }, [product, basePrice, unitPrice, quantity, deliveryFee, variant]);
 
   // ── Prevent refresh on Place Order step ────────────────────────────────────
   useEffect(() => {
@@ -117,19 +158,28 @@ const Checkout: React.FC = () => {
     };
   }, [step, placing]);
 
-  // ── Price ──────────────────────────────────────────────────────────────────
-  const basePrice = customPrice ?? (product ? parseInt(product.price.replace(/[^\d]/g, '')) : 499);
-  const deliveryFee = basePrice >= 999 ? 0 : 49;
-  const totalPrice = basePrice + deliveryFee;
-
   // ── Step helpers ───────────────────────────────────────────────────────────
-  const goNext = () => setStep(s => Math.min(s + 1, STEPS.length - 1));
+  const goNext = () => {
+    const nextStep = Math.min(step + 1, STEPS.length - 1);
+    setStep(nextStep);
+    trackCheckoutStep(STEPS[nextStep].key, nextStep, {
+      productId: product?.id,
+      productName: product?.title,
+      subtotal: basePrice,
+      unitPrice,
+      quantity,
+      shippingFee: deliveryFee,
+      variant,
+    });
+  };
   const goBack = () => setStep(s => Math.max(s - 1, 0));
 
   // ── Place order ────────────────────────────────────────────────────────────
   const handlePlaceOrder = async () => {
     if (!product) return;
     setPlacing(true);
+
+    trackPlaceOrder(orderId, product.title, basePrice, deliveryFee, product.id, quantity, variant);
 
     try {
       // 1. Upload images to Google Drive (non-blocking, best-effort)
@@ -177,6 +227,14 @@ const Checkout: React.FC = () => {
 
     setPlacing(false);
     setStep(2); // Done step
+    trackOrderSubmission(orderId, product.title, basePrice, {
+      productId: product.id,
+      unitPrice,
+      quantity,
+      shippingFee: deliveryFee,
+      variant,
+      paymentStatus: 'pending_payment',
+    });
   };
 
   const hasCustomisation = selectedTheme || selectedFrame || selectedSize;
@@ -528,7 +586,7 @@ const Checkout: React.FC = () => {
               Please reach out to us directly to place your order!
             </p>
             <div className="unavailable-actions">
-              <a href={`tel:+${import.meta.env.VITE_CONTACT_NUMBER}`} className="unavailable-btn unavailable-btn--call">
+              <a href={`tel:+${import.meta.env.VITE_CONTACT_NUMBER}`} className="unavailable-btn unavailable-btn--call" onClick={() => trackContactInfoClick('Call Us (Checkout Unavailable)')}>
                 <Phone size={16} /> Call Us
               </a>
               <a
@@ -536,6 +594,7 @@ const Checkout: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="unavailable-btn unavailable-btn--wa"
+                onClick={() => trackContactInfoClick('WhatsApp (Checkout Unavailable)')}
               >
                 <MessageCircle size={16} /> WhatsApp
               </a>
