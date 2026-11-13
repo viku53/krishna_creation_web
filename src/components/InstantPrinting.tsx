@@ -2,98 +2,12 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ShoppingBag, Bell, Instagram, Mail, Sparkles, ArrowRight, Star, Search, Package, Camera, Heart, Clock, Gift, CheckCircle, Zap, Printer } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { trackProductClick, trackEnquiryCTA, trackNotifySubmit, trackSocialClick, trackHeroCTA } from '../gtm';
 
 // ─── Coming Soon Flag ─────────────────────────────────────────────────────────
 const IS_COMING_SOON = import.meta.env.VITE_INSTANT_PRINTING_COMING_SOON === 'true';
 
-// ─── Product data ─────────────────────────────────────────────────────────────
-export interface PrintProduct {
-  id: string;
-  title: string;
-  subtitle: string;
-  emoji: string;
-  price: string;
-  rating: number;
-  reviews: number;
-  tags: string[];
-  gradient: string;
-  accentColor: string;
-}
-
-export const products: PrintProduct[] = [
-  {
-    id: 'photo-mug',
-    title: 'Custom Photo Mug',
-    subtitle: 'Your favorite memories on premium ceramic',
-    emoji: '☕',
-    price: '₹399',
-    rating: 4.8,
-    reviews: 124,
-    tags: ['Ceramic', 'Dishwasher Safe', '330ml'],
-    gradient: 'linear-gradient(135deg, #f97316, #f59e0b)',
-    accentColor: '#f97316',
-  },
-  {
-    id: 'photo-print',
-    title: 'Premium Photo Prints',
-    subtitle: 'Gallery-quality prints on archival paper',
-    emoji: '🖨️',
-    price: '₹ Based on size',
-    rating: 4.9,
-    reviews: 238,
-    tags: ['Glossy/Matte', 'Archival', 'Multiple Sizes'],
-    gradient: 'linear-gradient(135deg, #3b82f6, #06b6d4)',
-    accentColor: '#3b82f6',
-  },
-  // {
-  //   id: 'photo-frame',
-  //   title: 'Photo Frame',
-  //   subtitle: 'Elegant frames to showcase your moments',
-  //   emoji: '🖼️',
-  //   price: '₹799',
-  //   rating: 4.7,
-  //   reviews: 86,
-  //   tags: ['Wood/Acrylic', 'Wall Mount', 'A4/A3'],
-  //   gradient: 'linear-gradient(135deg, #8b5cf6, #a855f7)',
-  //   accentColor: '#8b5cf6',
-  // },
-  // {
-  //   id: 'gift-combo',
-  //   title: 'Gift Combo Pack',
-  //   subtitle: 'Curated gift sets for every occasion',
-  //   emoji: '🎁',
-  //   price: '₹1,299',
-  //   rating: 4.9,
-  //   reviews: 67,
-  //   tags: ['Mug + Frame + Prints', 'Gift Box', 'Personalized'],
-  //   gradient: 'linear-gradient(135deg, #ec4899, #f43f5e)',
-  //   accentColor: '#ec4899',
-  // },
-  // {
-  //   id: 'canvas-print',
-  //   title: 'Canvas Print',
-  //   subtitle: 'Museum-style canvas wrapped on wooden frames',
-  //   emoji: '🎨',
-  //   price: '₹1,499',
-  //   rating: 4.8,
-  //   reviews: 52,
-  //   tags: ['Canvas', 'Stretched', '12x18 / 16x24'],
-  //   gradient: 'linear-gradient(135deg, #10b981, #14b8a6)',
-  //   accentColor: '#10b981',
-  // },
-  // {
-  //   id: 'keychain',
-  //   title: 'Photo Keychain',
-  //   subtitle: 'Carry your memories everywhere you go',
-  //   emoji: '🔑',
-  //   price: '₹149',
-  //   rating: 4.6,
-  //   reviews: 310,
-  //   tags: ['Metal/Acrylic', 'Double-Sided', 'Compact'],
-  //   gradient: 'linear-gradient(135deg, #eab308, #f97316)',
-  //   accentColor: '#eab308',
-  // },
-];
+import { products } from '../data/products';
 
 // ═══════════════════════════════════════════════════════════════
 // COMING SOON COMPONENT (existing)
@@ -125,6 +39,7 @@ const ComingSoon: React.FC = () => {
   const handleNotify = (e: React.FormEvent) => {
     e.preventDefault();
     if (email.trim()) {
+      trackNotifySubmit('instant_printing_coming_soon');
       setSubmitted(true);
     }
   };
@@ -221,11 +136,11 @@ const ComingSoon: React.FC = () => {
         <div className="cs-socials">
           <p className="cs-social-hint">Meanwhile, follow us for sneak peeks:</p>
           <div className="cs-social-links">
-            <a href="https://www.instagram.com/krishna_creation10" target="_blank" rel="noopener noreferrer" className="cs-social-link">
+            <a href="https://www.instagram.com/krishna_creation10" target="_blank" rel="noopener noreferrer" className="cs-social-link" onClick={() => trackSocialClick('Instagram', 'instant_printing_coming_soon')}>
               <Instagram size={20} />
               Instagram
             </a>
-            <a href={`mailto:${import.meta.env.VITE_EMAILJS_TO_EMAIL}`} className="cs-social-link">
+            <a href={`mailto:${import.meta.env.VITE_EMAILJS_TO_EMAIL}`} className="cs-social-link" onClick={() => trackSocialClick('Email', 'instant_printing_coming_soon')}>
               <Mail size={20} />
               Email Us
             </a>
@@ -269,7 +184,7 @@ const ProductListing: React.FC = () => {
           Turn your cherished memories into beautiful prints, mugs, frames, and more — crafted with love and premium quality.
         </p>
         {/* Track Order CTA */}
-        <Link to="/track-order" className="plp-track-order-btn" id="plp-track-order-btn">
+        <Link to="/track-order" className="plp-track-order-btn" id="plp-track-order-btn" onClick={() => trackHeroCTA('Track Your Order')}>
           <Package size={16} />
           <span>Track Your Order</span>
           <Search size={14} />
@@ -286,6 +201,7 @@ const ProductListing: React.FC = () => {
               key={product.id}
               className="plp-card"
               style={{ animationDelay: `${idx * 0.08}s` }}
+              onClick={() => trackProductClick(product.id, product.title)}
             >
               {/* Gradient top */}
               <div
@@ -439,7 +355,7 @@ const EventInstantPrinting: React.FC = () => {
       <div className="eip-cta-wrap">
         <Link
           to="/contact"
-          onClick={() => setTimeout(() => window.location.hash = "contact-us", 100)}
+          onClick={() => { trackEnquiryCTA('Book Now for Your Event'); setTimeout(() => window.location.hash = "contact-us", 100); }}
           className="eip-cta-btn"
           id="eip-book-event-cta"
         >

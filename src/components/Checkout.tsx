@@ -21,9 +21,15 @@ import {
   PackageCheck,
   Search,
 } from 'lucide-react';
-import type { PrintProduct } from './InstantPrinting';
+import type { PrintProduct } from '../data/products';
 import { sendOrderNotification, ENABLE_NOTIFICATIONS } from './sendNotification';
 import { uploadOrderToDrive } from './uploadToDrive';
+import {
+  trackCheckoutStep,
+  trackPlaceOrder,
+  trackOrderConfirmation,
+  trackContactInfoClick,
+} from '../gtm';
 
 // ── Steps ─────────────────────────────────────────────────────────────────────
 const STEPS = [
@@ -82,6 +88,11 @@ const Checkout: React.FC = () => {
   const [orderId] = useState(genOrderId);
   const [showUnavailable, setShowUnavailable] = useState(false);
 
+  // ── Track Step 0 on mount ──────────────────────────────────────────────────
+  useEffect(() => {
+    trackCheckoutStep('review', 0);
+  }, []);
+
   // ── Prevent refresh on Place Order step ────────────────────────────────────
   useEffect(() => {
     // Only block refresh when user is on the details/place-order step (step 1)
@@ -123,13 +134,19 @@ const Checkout: React.FC = () => {
   const totalPrice = basePrice + deliveryFee;
 
   // ── Step helpers ───────────────────────────────────────────────────────────
-  const goNext = () => setStep(s => Math.min(s + 1, STEPS.length - 1));
+  const goNext = () => {
+    const nextStep = Math.min(step + 1, STEPS.length - 1);
+    setStep(nextStep);
+    trackCheckoutStep(STEPS[nextStep].key, nextStep);
+  };
   const goBack = () => setStep(s => Math.max(s - 1, 0));
 
   // ── Place order ────────────────────────────────────────────────────────────
   const handlePlaceOrder = async () => {
     if (!product) return;
     setPlacing(true);
+
+    trackPlaceOrder(orderId, product.title, totalPrice);
 
     try {
       // 1. Upload images to Google Drive (non-blocking, best-effort)
@@ -177,6 +194,7 @@ const Checkout: React.FC = () => {
 
     setPlacing(false);
     setStep(2); // Done step
+    trackOrderConfirmation(orderId, product.title, totalPrice);
   };
 
   const hasCustomisation = selectedTheme || selectedFrame || selectedSize;
@@ -528,7 +546,7 @@ const Checkout: React.FC = () => {
               Please reach out to us directly to place your order!
             </p>
             <div className="unavailable-actions">
-              <a href={`tel:+${import.meta.env.VITE_CONTACT_NUMBER}`} className="unavailable-btn unavailable-btn--call">
+              <a href={`tel:+${import.meta.env.VITE_CONTACT_NUMBER}`} className="unavailable-btn unavailable-btn--call" onClick={() => trackContactInfoClick('Call Us (Checkout Unavailable)')}>
                 <Phone size={16} /> Call Us
               </a>
               <a
@@ -536,6 +554,7 @@ const Checkout: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="unavailable-btn unavailable-btn--wa"
+                onClick={() => trackContactInfoClick('WhatsApp (Checkout Unavailable)')}
               >
                 <MessageCircle size={16} /> WhatsApp
               </a>

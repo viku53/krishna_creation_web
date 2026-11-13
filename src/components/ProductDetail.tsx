@@ -4,9 +4,20 @@ import {
   ArrowLeft, Upload, X, Star, ImagePlus, ZoomIn,
   Check, Minus, Plus, Sparkles, PackageCheck,
 } from 'lucide-react';
-import { products } from './InstantPrinting';
+import { products } from '../data/products';
 import { useMediaModal } from './useMediaModal';
 import MediaModal from './MediaModal';
+import {
+  trackViewItem,
+  trackPhotoUpload,
+  trackPhotoRemove,
+  track3DMugInteract,
+  trackThemeSelect,
+  trackFrameSelect,
+  trackPrintSizeSelect,
+  trackQuantityChange,
+  trackAddToCart,
+} from '../gtm';
 
 // ── Mug Themes (loaded from src/assets/mug_themes/) ───────────────────────────
 // Vite's import.meta.glob eagerly imports all images from the folder.
@@ -60,10 +71,13 @@ const Mug3DViewer: React.FC<Mug3DViewerProps> = ({ photoUrls, themeUrl }) => {
   };
 
   const runInertia = useCallback(() => {
-    vel.current *= 0.92;
-    if (Math.abs(vel.current) < 0.04) { vel.current = 0; return; }
-    setRotY(y => y + vel.current);
-    rafId.current = requestAnimationFrame(runInertia);
+    function step() {
+      vel.current *= 0.92;
+      if (Math.abs(vel.current) < 0.04) { vel.current = 0; return; }
+      setRotY(y => y + vel.current);
+      rafId.current = requestAnimationFrame(step);
+    }
+    step();
   }, []);
 
   useEffect(() => {
@@ -98,12 +112,24 @@ const Mug3DViewer: React.FC<Mug3DViewerProps> = ({ photoUrls, themeUrl }) => {
     return () => el.removeEventListener('wheel', handleWheel);
   }, []);
 
+  const hasTrackedInteract = useRef(false);
+  const markInteract = () => {
+    if (!hasTrackedInteract.current) {
+      hasTrackedInteract.current = true;
+      track3DMugInteract();
+    }
+  };
+
   const onMouseDown = (e: React.MouseEvent) => {
+    markInteract();
     dragging.current = true; lastX.current = e.clientX; vel.current = 0;
     setGrabbing(true); stopRaf(); e.preventDefault();
   };
 
-  const onTouchStart = (e: React.TouchEvent) => { lastX.current = e.touches[0].clientX; vel.current = 0; stopRaf(); };
+  const onTouchStart = (e: React.TouchEvent) => {
+    markInteract();
+    lastX.current = e.touches[0].clientX; vel.current = 0; stopRaf();
+  };
   const onTouchMove = (e: React.TouchEvent) => {
     const dx = e.touches[0].clientX - lastX.current;
     lastX.current = e.touches[0].clientX; vel.current = dx * 0.6;
@@ -435,21 +461,19 @@ const ProductDetail: React.FC = () => {
   const [selectedSize, setSelectedSize] = useState<typeof PRINT_SIZES[number] | null>(null);
   const [quantity, setQuantity] = useState(1);
 
+  // Track product view (GA4 standard view_item)
+  useEffect(() => {
+    if (product) {
+      trackViewItem(product.id, product.title, product.price);
+    }
+  }, [product]);
+
   // Limit: mug with theme = 1 photo; mug without theme = 3; frame = 1; others = 3
   const maxImages = useMemo(() => {
     if (id === 'photo-frame') return 1;
     if (id === 'photo-mug' && selectedTheme) return 1;
     return MAX_IMAGES_DEFAULT;
   }, [id, selectedTheme]);
-
-  // When theme changes and user has too many images, trim
-  useEffect(() => {
-    if (images.length > maxImages) {
-      const trimmed = images.slice(0, maxImages);
-      setImages(trimmed);
-      setPreviewUrls(trimmed.map(f => URL.createObjectURL(f)));
-    }
-  }, [maxImages]);
 
   const { modalOpen, openModal, closeModal, prevModal, nextModal, modalItem, hasPrev, hasNext } =
     useMediaModal(previewUrls.map((url, i) => ({ url, caption: `Photo ${i + 1} of ${previewUrls.length}` })));
@@ -460,11 +484,13 @@ const ProductDetail: React.FC = () => {
     setImages(combined);
     setPreviewUrls(combined.map(f => URL.createObjectURL(f)));
     if (fileInputRef.current) fileInputRef.current.value = '';
+    if (id) trackPhotoUpload(id, combined.length);
   };
 
   const removeImage = (idx: number) => {
     setImages(prev => prev.filter((_, i) => i !== idx));
     setPreviewUrls(prev => prev.filter((_, i) => i !== idx));
+    if (id) trackPhotoRemove(id);
   };
 
   const printPrice = id === 'photo-print' && selectedSize ? selectedSize.price * quantity : null;
@@ -614,6 +640,7 @@ const ProductDetail: React.FC = () => {
               selected={selectedTheme}
               onSelect={theme => {
                 setSelectedTheme(theme);
+                trackThemeSelect(theme?.name ?? null);
                 // Clear extra images if switching to theme mode
                 if (theme && images.length > 1) {
                   setImages(prev => [prev[0]]);
@@ -651,7 +678,7 @@ const ProductDetail: React.FC = () => {
                 <button
                   key={frame.id}
                   className={`frame-style-card ${selectedFrame?.id === frame.id ? 'frame-style-card--selected' : ''}`}
-                  onClick={() => setSelectedFrame(selectedFrame?.id === frame.id ? null : frame)}
+                  onClick={() => { const next = selectedFrame?.id === frame.id ? null : frame; setSelectedFrame(next); trackFrameSelect(next?.name ?? null); }}
                   aria-label={`Select frame: ${frame.name}`}
                 >
                   <div className="frame-style-swatch"
@@ -686,7 +713,7 @@ const ProductDetail: React.FC = () => {
                 <button
                   key={size.id}
                   className={`print-size-chip ${selectedSize?.id === size.id ? 'print-size-chip--selected' : ''}`}
-                  onClick={() => setSelectedSize(selectedSize?.id === size.id ? null : size)}
+                  onClick={() => { const next = selectedSize?.id === size.id ? null : size; setSelectedSize(next); if (next) trackPrintSizeSelect(next.label); }}
                   aria-label={`Select size ${size.label}`}
                 >
                   <span className="print-size-label">{size.label}</span>
@@ -703,10 +730,10 @@ const ProductDetail: React.FC = () => {
                   <div className="print-total-badge">Total: <strong>₹{selectedSize.price * quantity}</strong></div>
                 </div>
                 <div className="print-quantity-stepper">
-                  <button className="qty-btn" onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                  <button className="qty-btn" onClick={() => { const q = Math.max(1, quantity - 1); setQuantity(q); trackQuantityChange(q); }}
                     disabled={quantity <= 1} aria-label="Decrease"><Minus size={16} /></button>
                   <span className="qty-value">{quantity}</span>
-                  <button className="qty-btn" onClick={() => setQuantity(q => Math.min(50, q + 1))}
+                  <button className="qty-btn" onClick={() => { const q = Math.min(50, quantity + 1); setQuantity(q); trackQuantityChange(q); }}
                     disabled={quantity >= 50} aria-label="Increase"><Plus size={16} /></button>
                 </div>
                 <p className="qty-hint">{quantity} × ₹{selectedSize.price} = ₹{selectedSize.price * quantity}</p>
@@ -739,7 +766,8 @@ const ProductDetail: React.FC = () => {
             id="pdp-add-to-cart-btn"
             className={`pdp-cta-btn ${!canCheckout() ? 'pdp-cta-btn--disabled' : ''}`}
             disabled={!canCheckout()}
-            onClick={() =>
+            onClick={() => {
+              if (product) trackAddToCart(product.id, product.title, ctaPrice);
               navigate('/checkout', {
                 state: {
                   product,
@@ -754,7 +782,7 @@ const ProductDetail: React.FC = () => {
                   customPrice: printPrice ?? undefined,
                 },
               })
-            }
+            }}
           >
             <PackageCheck size={18} />
             {!canCheckout() ? ctaHint() : `Place Order · ${ctaPrice}`}

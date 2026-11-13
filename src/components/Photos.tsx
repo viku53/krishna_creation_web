@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import MediaModal from './MediaModal';
 import { useMediaModal } from './useMediaModal';
 import { Camera } from 'lucide-react';
+import { trackMediaView, trackMediaModalOpen } from '../gtm';
 
 // ─── Categories ───────────────────────────────────────────────────────────────
 const categories = ['Wedding', 'Haldi', 'Sangeet', 'Pre-Wedding', 'Engagement'] as const;
@@ -132,13 +133,15 @@ const Photos: React.FC = () => {
   const hasMore = visibleCount < filteredPhotos.length;
 
 
-  // Reset visible count when category changes
-  React.useEffect(() => {
+  // Handle category selection and reset pagination
+  const handleCategorySelect = (cat: 'All' | Category) => {
+    setSelected(cat);
     setVisibleCount(INITIAL_BATCH);
     visibleCountRef.current = INITIAL_BATCH;
     setPrevCount(0);
     isLoadingRef.current = false;
-  }, [selected]);
+    trackMediaView('photo', cat);
+  };
 
   // Track scroll direction
   React.useEffect(() => {
@@ -234,7 +237,7 @@ const Photos: React.FC = () => {
       {/* ── Category Filter ────────────────────────────────────── */}
       <div className="filter-bar filter-bar--dark">
         <button
-          onClick={() => setSelected('All')}
+          onClick={() => handleCategorySelect('All')}
           className={`filter-pill filter-pill--dark ${selected === 'All' ? 'filter-pill--active-dark' : ''}`}
         >
           All ({shuffled.length})
@@ -244,7 +247,7 @@ const Photos: React.FC = () => {
           return (
             <button
               key={cat}
-              onClick={() => setSelected(cat)}
+              onClick={() => handleCategorySelect(cat)}
               className={`filter-pill filter-pill--dark ${selected === cat ? 'filter-pill--active-dark' : ''}`}
             >
               {cat} ({count})
@@ -265,12 +268,12 @@ const Photos: React.FC = () => {
             key={photo.id}
             className={`photo-card ${hoveredIdx === idx ? 'photo-card--hovered' : ''} ${idx >= prevCount ? 'photo-card--new' : ''}`}
             style={idx >= prevCount ? { animationDelay: `${(idx - prevCount) * 60}ms` } : undefined}
-            onClick={() => openModal(idx)}
+            onClick={() => { openModal(idx); trackMediaModalOpen('photo'); }}
             onMouseEnter={() => setHoveredIdx(idx)}
             onMouseLeave={() => setHoveredIdx(null)}
             tabIndex={0}
             aria-label={`View photo ${idx + 1}`}
-            onKeyDown={e => { if (e.key === 'Enter') openModal(idx); }}
+            onKeyDown={e => { if (e.key === 'Enter') { openModal(idx); trackMediaModalOpen('photo'); } }}
           >
             <img
               src={photo.url}

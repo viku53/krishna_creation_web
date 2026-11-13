@@ -2,6 +2,9 @@ User-agent: *
 Allow: /
 Disallow: /checkout
 Disallow: /*.json$
+Allow: /ai-catalog.json
+Allow: /.well-known/
+Allow: /llms.txt
 
 # Sitemaps
 Sitemap: https://krishnacreationphotography.com/sitemap.xml

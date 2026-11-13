@@ -1,0 +1,65 @@
+{
+  "$schema": "https://agenticresourcediscovery.org/schemas/v1.0/ai-catalog.schema.json",
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "Krishna Creation Photography",
+    "identifier": "did:web:krishnacreationphotography.com",
+    "documentationUrl": "https://krishnacreationphotography.com/llms.txt"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:krishnacreation:services:photography",
+      "displayName": "Krishna Creation Photography Services",
+      "type": "application/agent-skills+json",
+      "url": "https://krishnacreationphotography.com/llms.txt",
+      "description": "Comprehensive photography and videography studio services in Mumbai, specializing in wedding, pre-wedding, candid, and cinematic reels.",
+      "version": "1.0.0",
+      "representativeQueries": [
+        "Best wedding photographer in Mumbai",
+        "Book a pre-wedding shoot in Mumbai",
+        "Wedding videography and cinematic reels Mumbai"
+      ],
+      "tags": [
+        "photography",
+        "wedding-photography",
+        "mumbai-photographer",
+        "videography"
+      ]
+    },
+    {
+      "identifier": "urn:air:krishnacreation:services:instant-printing",
+      "displayName": "Instant Photo Printing & Custom Gifting",
+      "type": "application/agent-skills+json",
+      "url": "https://krishnacreationphotography.com/instant-printing",
+      "description": "Custom personalized ceramic photo mugs, archival photo prints, and live event on-site instant photo printing setups.",
+      "version": "1.0.0",
+      "representativeQueries": [
+        "Order custom photo mug online",
+        "Live photo printing booth for wedding in Mumbai",
+        "Order archival photo prints online"
+      ],
+      "tags": [
+        "instant-printing",
+        "custom-photo-mug",
+        "photo-prints",
+        "event-printing"
+      ]
+    },
+    {
+      "identifier": "urn:air:krishnacreation:services:order-tracking",
+      "displayName": "Print Order Tracking Service",
+      "type": "application/agent-skills+json",
+      "url": "https://krishnacreationphotography.com/track-order",
+      "description": "Real-time order lookup and tracking system for customized print products.",
+      "version": "1.0.0",
+      "representativeQueries": [
+        "Track my Krishna Creation print order",
+        "Check status of my photo mug order"
+      ],
+      "tags": [
+        "order-tracking",
+        "order-status"
+      ]
+    }
+  ]
+}

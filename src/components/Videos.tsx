@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Video, Play, CloudOff, Loader2 } from 'lucide-react';
 import { useDriveVideos } from './useDriveVideos';
 import type { DriveVideoItem } from './useDriveVideos';
+import { trackMediaView, trackMediaModalOpen } from '../gtm';
 
 const VIDEOS_FOLDER_ID = import.meta.env.VITE_GOOGLE_DRIVE_VIDEOS_FOLDER_ID as string;
 
@@ -27,15 +28,9 @@ interface VideoModalProps {
 }
 
 const VideoModal: React.FC<VideoModalProps> = ({ video, onClose, onPrev, onNext }) => {
-  if (!video) return null;
-
-  // Close on backdrop click
-  const handleBackdrop = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) onClose();
-  };
-
   // Keyboard navigation
   React.useEffect(() => {
+    if (!video) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
       if (e.key === 'ArrowLeft') onPrev?.();
@@ -43,7 +38,14 @@ const VideoModal: React.FC<VideoModalProps> = ({ video, onClose, onPrev, onNext 
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [onClose, onPrev, onNext]);
+  }, [video, onClose, onPrev, onNext]);
+
+  // Close on backdrop click
+  const handleBackdrop = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) onClose();
+  };
+
+  if (!video) return null;
 
   return (
     <div
@@ -306,7 +308,7 @@ const Videos: React.FC = () => {
       {/* Filter Bar */}
       <div className="filter-bar filter-bar--dark">
         <button
-          onClick={() => setSelected('All')}
+          onClick={() => { setSelected('All'); trackMediaView('video', 'All'); }}
           className={`filter-pill filter-pill--dark ${selected === 'All' ? 'filter-pill--active-dark' : ''}`}
         >
           All ({videos.length})
@@ -316,7 +318,7 @@ const Videos: React.FC = () => {
           return (
             <button
               key={cat}
-              onClick={() => setSelected(cat)}
+              onClick={() => { setSelected(cat); trackMediaView('video', cat); }}
               className={`filter-pill filter-pill--dark ${selected === cat ? 'filter-pill--active-dark' : ''}`}
             >
               {cat} ({count})
@@ -331,7 +333,7 @@ const Videos: React.FC = () => {
           <VideoCard
             key={video.id}
             video={video}
-            onClick={() => openModal(idx)}
+            onClick={() => { openModal(idx); trackMediaModalOpen('video'); }}
             index={idx}
           />
         ))}

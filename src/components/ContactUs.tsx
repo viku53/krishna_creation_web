@@ -18,6 +18,12 @@ import {
   X,
 } from 'lucide-react';
 import { sendContactNotification, ENABLE_NOTIFICATIONS } from './sendNotification';
+import {
+  trackContactFormSubmit,
+  trackContactFormSuccess,
+  trackContactFormError,
+  trackContactInfoClick,
+} from '../gtm';
 
 // ── Owner Data ─────────────────────────────────────────────────
 const owners = [
@@ -91,6 +97,8 @@ const ContactUs: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    trackContactFormSubmit(eventType);
+
     if (!ENABLE_NOTIFICATIONS) {
       setShowUnavailable(true);
       return;
@@ -112,11 +120,14 @@ const ContactUs: React.FC = () => {
 
       if (success) {
         setFormState('sent');
+        trackContactFormSuccess(eventType);
       } else {
         setFormState('error');
+        trackContactFormError(eventType);
       }
     } catch {
       setFormState('error');
+      trackContactFormError(eventType);
     }
   };
 
@@ -257,6 +268,7 @@ const ContactUs: React.FC = () => {
               target="_blank"
               rel="noopener noreferrer"
               className="contact-info-card"
+              onClick={() => trackContactInfoClick(item.label)}
             >
               <div
                 className="contact-info-icon"
@@ -513,7 +525,7 @@ const ContactUs: React.FC = () => {
               Please reach out to us directly — we'd love to hear from you!
             </p>
             <div className="unavailable-actions">
-              <a href={`tel:+${import.meta.env.VITE_CONTACT_NUMBER}`} className="unavailable-btn unavailable-btn--call">
+              <a href={`tel:+${import.meta.env.VITE_CONTACT_NUMBER}`} className="unavailable-btn unavailable-btn--call" onClick={() => trackContactInfoClick('Call Us (Contact Unavailable)')}>
                 <Phone size={16} />
                 Call Us
               </a>
@@ -522,6 +534,7 @@ const ContactUs: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="unavailable-btn unavailable-btn--wa"
+                onClick={() => trackContactInfoClick('WhatsApp (Contact Unavailable)')}
               >
                 <MessageCircle size={16} />
                 WhatsApp
