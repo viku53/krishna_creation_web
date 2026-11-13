@@ -1,0 +1,27 @@
+# PR-Agent Configuration (https://docs.pr-agent.ai/installation/github/)
+
+[config]
+# Output run details (e.g., token usage, duration) in PR comments
+output_run_details = true
+
+[pr_reviewer]
+# Customized instructions for this React + Vite + TypeScript project
+extra_instructions = """
+Focus on:
+1. React 19 and TypeScript best practices, type safety, and clean code.
+2. Performance optimization (lazy loading, code-splitting, preventing unnecessary re-renders).
+3. Web accessibility (discernible link text, alt tags, ARIA labels).
+4. Security vulnerabilities and secure handling of API keys/secrets.
+"""
+enable_review_labels_security = true
+enable_review_labels_effort = true
+num_code_suggestions = 4
+
+[pr_description]
+# Automatically generate a comprehensive PR summary and labels
+publish_labels = true
+add_original_user_description = true
+
+[pr_code_suggestions]
+# Number of actionable code suggestions per chunk
+num_code_suggestions_per_chunk = 4
