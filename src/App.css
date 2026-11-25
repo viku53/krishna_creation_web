@@ -3222,10 +3222,6 @@ input[type="submit"] {
   font-weight: 700;
 }
 
-.eip-section--focused {
-  border-color: rgba(244, 63, 94, 0.45);
-}
-
 /* ═══════════════════════════════════════════════════════════════
    PRODUCT DISPLAY PAGE (PDP)
 ═══════════════════════════════════════════════════════════════ */
@@ -6734,37 +6730,91 @@ input[type="submit"] {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
-   EVENT INSTANT PRINTING SECTION (.eip-*)
+   LIVE EVENT PRINTING BOOTH MODAL (.eip-*)
    ═══════════════════════════════════════════════════════════════════════════════ */
 
-.eip-section {
+.eip-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  background: rgba(6, 7, 15, 0.78);
+  backdrop-filter: blur(10px);
+  box-sizing: border-box;
+  animation: fadeIn 0.25s ease;
+}
+
+.eip-modal {
   position: relative;
+  width: 100%;
+  max-width: 780px;
+  max-height: min(90vh, 840px);
+  border-radius: 24px;
   overflow: hidden;
-  margin: 2rem 1rem 2.5rem;
-  border-radius: 28px;
-  background: linear-gradient(145deg, #0d0d1f 0%, #14142b 50%, #0a0a18 100%);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  padding: 3rem 1.5rem 2.5rem;
+  background: linear-gradient(145deg, #0d0d1f 0%, #14142b 52%, #0a0a18 100%);
+  border: 1px solid rgba(244, 63, 94, 0.24);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  animation: modalPop 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.eip-modal-close {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  z-index: 10;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(15, 15, 28, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+}
+
+.eip-modal-close svg {
+  stroke: currentColor;
+}
+
+.eip-modal-close:hover {
+  background: rgba(244, 63, 94, 0.2);
+  border-color: rgba(244, 63, 94, 0.45);
+  color: #fff;
+  transform: scale(1.06);
+}
+
+.eip-modal-scroll {
+  position: relative;
+  z-index: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  padding: 2.5rem 1.15rem 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 1.5rem;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(244, 63, 94, 0.08) inset;
+  gap: 1.25rem;
+  box-sizing: border-box;
 }
 
 @media (min-width: 640px) {
-  .eip-section {
-    margin: 2.5rem 1.5rem 3rem;
-    padding: 4rem 3rem 3.5rem;
+  .eip-modal-backdrop {
+    padding: 1.5rem;
   }
-}
 
-@media (min-width: 1024px) {
-  .eip-section {
-    max-width: 860px;
-    margin: 2.5rem auto 3rem;
-    padding: 4.5rem 4rem;
+  .eip-modal-scroll {
+    padding: 3rem 2.5rem 2.5rem;
+    gap: 1.45rem;
   }
 }
 
@@ -6795,17 +6845,6 @@ input[type="submit"] {
   right: -60px;
   animation-duration: 11s;
   animation-delay: -3s;
-}
-
-.eip-blob--3 {
-  width: 180px;
-  height: 180px;
-  background: radial-gradient(circle, #a855f7, transparent 70%);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  animation-duration: 13s;
-  animation-delay: -6s;
 }
 
 @keyframes eipBlobFloat {
@@ -6841,6 +6880,10 @@ input[type="submit"] {
   margin: 0;
   position: relative;
   z-index: 1;
+}
+
+.eip-modal-title {
+  font-size: clamp(1.55rem, 4.5vw, 2.45rem);
 }
 
 .eip-headline-accent {
@@ -6931,7 +6974,9 @@ input[type="submit"] {
 
 .eip-step {
   flex: 1;
+  width: 100%;
   max-width: 220px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -7011,7 +7056,9 @@ input[type="submit"] {
   border-left: 3px solid #f43f5e;
   border-radius: 16px;
   padding: 1.25rem 1.5rem;
+  width: 100%;
   max-width: 480px;
+  box-sizing: border-box;
   text-align: left;
   display: flex;
   flex-direction: column;
@@ -7048,19 +7095,29 @@ input[type="submit"] {
 
 /* ── CTA ───────────────────────────────────────────────────── */
 .eip-cta-wrap {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.75rem;
   position: relative;
   z-index: 1;
+}
+
+.eip-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
 }
 
 .eip-cta-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.55rem;
-  padding: 0.85rem 1.85rem;
+  padding: 0.85rem 1.75rem;
   border-radius: 999px;
   background: linear-gradient(135deg, #f43f5e 0%, #fb923c 100%);
   color: #fff;
@@ -7078,15 +7135,37 @@ input[type="submit"] {
   color: #fff;
 }
 
+.eip-wa-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.14);
+  border: 1px solid rgba(34, 197, 94, 0.38);
+  color: #86efac;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.eip-wa-btn:hover {
+  background: rgba(34, 197, 94, 0.24);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
 .eip-cta-icon {
   font-size: 1.1rem;
   line-height: 1;
 }
 
 .eip-cta-note {
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.42);
   margin: 0;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
 }
 

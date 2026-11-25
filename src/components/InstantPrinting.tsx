@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
   ShoppingBag,
@@ -19,10 +19,19 @@ import {
   Printer,
   Truck,
   Upload,
+  X,
+  MessageCircle,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { products, giftCombos } from '../data/products';
-import { trackProductClick, trackEnquiryCTA, trackNotifySubmit, trackSocialClick, trackHeroCTA } from '../gtm';
+import {
+  trackProductClick,
+  trackEnquiryCTA,
+  trackNotifySubmit,
+  trackSocialClick,
+  trackHeroCTA,
+  trackContactInfoClick,
+} from '../gtm';
 
 // ─── Coming Soon Flag ─────────────────────────────────────────────────────────
 const IS_COMING_SOON = import.meta.env.VITE_INSTANT_PRINTING_COMING_SOON === 'true';
@@ -179,14 +188,38 @@ const productSchemas = [
 // PRODUCT LISTING STOREFRONT
 // ═══════════════════════════════════════════════════════════════
 const ProductListing: React.FC = () => {
-  const [activeMode, setActiveMode] = useState<'online' | 'booth'>('online');
+  const location = useLocation();
+  const [isBoothModalOpen, setIsBoothModalOpen] = useState(() => {
+    const params = new URLSearchParams(location.search);
+    return location.hash === '#live-event-booth' || params.get('booth') === '1';
+  });
   const onlineSectionRef = useRef<HTMLElement | null>(null);
-  const boothSectionRef = useRef<HTMLElement | null>(null);
 
-  const switchMode = (mode: 'online' | 'booth') => {
-    setActiveMode(mode);
-    const targetRef = mode === 'online' ? onlineSectionRef : boothSectionRef;
-    targetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  useEffect(() => {
+    if (!isBoothModalOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsBoothModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [isBoothModalOpen]);
+
+  const scrollToOnlineOrders = () => {
+    onlineSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const openBoothModal = () => {
+    setIsBoothModalOpen(true);
+    trackHeroCTA('Live Event Printing Booth');
   };
 
   return (
@@ -233,24 +266,22 @@ const ProductListing: React.FC = () => {
           Personalised ceramic mugs, magic mugs, frames, keychains &amp; archival photo packs crafted with your memories — delivered same-day in Mumbai or printed live at your celebration.
         </p>
 
-        {/* Mode Switcher Tabs (Order Online vs Live Event Booth) */}
-        <div className="plp-mode-tabs" role="tablist" aria-label="Choose ordering mode">
+        {/* Mode Actions (Order Online vs Live Event Booth Modal) */}
+        <div className="plp-mode-tabs" role="group" aria-label="Choose ordering mode">
           <button
             type="button"
-            role="tab"
-            aria-selected={activeMode === 'online'}
-            className={`plp-mode-tab ${activeMode === 'online' ? 'plp-mode-tab--active' : ''}`}
-            onClick={() => switchMode('online')}
+            className={`plp-mode-tab ${!isBoothModalOpen ? 'plp-mode-tab--active' : ''}`}
+            onClick={scrollToOnlineOrders}
           >
             <ShoppingBag size={15} />
             <span>Order Online (Mumbai Delivery)</span>
           </button>
           <button
             type="button"
-            role="tab"
-            aria-selected={activeMode === 'booth'}
-            className={`plp-mode-tab ${activeMode === 'booth' ? 'plp-mode-tab--active' : ''}`}
-            onClick={() => switchMode('booth')}
+            aria-haspopup="dialog"
+            aria-expanded={isBoothModalOpen}
+            className={`plp-mode-tab ${isBoothModalOpen ? 'plp-mode-tab--active' : ''}`}
+            onClick={openBoothModal}
           >
             <Camera size={15} />
             <span>Live Event Printing Booth</span>
@@ -271,12 +302,12 @@ const ProductListing: React.FC = () => {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════
-          MODE 1 (DEFAULT): ORDER ONLINE (MUMBAI DELIVERY)
+          ORDER ONLINE (MUMBAI DELIVERY)
       ═══════════════════════════════════════════════════════════════ */}
       <section
         id="order-online"
         ref={onlineSectionRef}
-        className={`plp-grid-section ${activeMode === 'online' ? 'plp-section--focused' : ''}`}
+        className="plp-grid-section"
         aria-label="Order Online (Mumbai Delivery)"
       >
         <div className="plp-section-header">
@@ -413,26 +444,24 @@ const ProductListing: React.FC = () => {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════════
-          MODE 2: LIVE EVENT PRINTING BOOTH
-      ═══════════════════════════════════════════════════════════════ */}
-      <EventInstantPrinting
-        sectionRef={boothSectionRef}
-        focused={activeMode === 'booth'}
-      />
+      {/* Live Event Printing Booth Modal */}
+      {isBoothModalOpen && (
+        <EventBoothModal onClose={() => setIsBoothModalOpen(false)} />
+      )}
     </div>
   );
 };
 
 // ═══════════════════════════════════════════════════════════════
-// EVENT INSTANT PRINTING SECTION
+// LIVE EVENT PRINTING BOOTH MODAL
 // ═══════════════════════════════════════════════════════════════
-interface EventInstantPrintingProps {
-  sectionRef?: React.RefObject<HTMLElement | null>;
-  focused?: boolean;
+interface EventBoothModalProps {
+  onClose: () => void;
 }
 
-const EventInstantPrinting: React.FC<EventInstantPrintingProps> = ({ sectionRef, focused }) => {
+const EventBoothModal: React.FC<EventBoothModalProps> = ({ onClose }) => {
+  const contactNumber = import.meta.env.VITE_CONTACT_NUMBER;
+
   const steps = [
     {
       icon: <Camera size={22} />,
@@ -462,98 +491,131 @@ const EventInstantPrinting: React.FC<EventInstantPrintingProps> = ({ sectionRef,
   ];
 
   return (
-    <section
-      id="live-event-booth"
-      ref={sectionRef}
-      className={`eip-section ${focused ? 'eip-section--focused' : ''}`}
-      aria-label="Live Event Printing Booth"
+    <div
+      className="eip-modal-backdrop"
+      onClick={e => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      {/* Ambient blobs */}
-      <div className="eip-blob eip-blob--1" />
-      <div className="eip-blob eip-blob--2" />
-      <div className="eip-blob eip-blob--3" />
+      <div
+        className="eip-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="eip-modal-title"
+      >
+        {/* Ambient blobs clipped cleanly inside modal shell */}
+        <div className="eip-blob eip-blob--1" />
+        <div className="eip-blob eip-blob--2" />
 
-      {/* Eyebrow */}
-      <div className="eip-eyebrow">
-        <Sparkles size={13} />
-        <span>Live Event Printing Booth</span>
-      </div>
-
-      {/* Headline */}
-      <h2 className="eip-headline">
-        Your Guests Leave With
-        <span className="eip-headline-accent"><br />A Memory In Hand</span>
-      </h2>
-      <p className="eip-subline">
-        Book our on-site live instant printing booth across Mumbai for <strong>weddings, birthdays, receptions, and corporate events</strong>. While your guests enjoy the event, we shoot, print, and pack personalised photo keepsakes live on the spot.
-      </p>
-
-      {/* Supported event types */}
-      <div className="eip-event-tags">
-        {eventTypes.map(type => (
-          <span key={type} className="eip-event-tag">
-            🎉 {type}
-          </span>
-        ))}
-      </div>
-
-      {/* Feature pills */}
-      <div className="eip-pills">
-        {features.map(f => (
-          <div key={f.label} className="eip-pill">
-            <span className="eip-pill-icon">{f.icon}</span>
-            {f.label}
-          </div>
-        ))}
-      </div>
-
-      {/* How it works */}
-      <div className="eip-steps-wrap">
-        <p className="eip-steps-label">How It Works</p>
-        <div className="eip-steps">
-          {steps.map((s, i) => (
-            <React.Fragment key={s.title}>
-              <div className="eip-step">
-                <div className="eip-step-icon">{s.icon}</div>
-                <div className="eip-step-num">0{i + 1}</div>
-                <h3 className="eip-step-title">{s.title}</h3>
-                <p className="eip-step-desc">{s.desc}</p>
-              </div>
-              {i < steps.length - 1 && <div className="eip-step-connector" />}
-            </React.Fragment>
-          ))}
-        </div>
-      </div>
-
-      {/* Pull quote */}
-      <div className="eip-quote">
-        <div className="eip-quote-mark">"</div>
-        <p className="eip-quote-text">
-          Not every return gift survives the week.<br />A photo lasts a lifetime.
-        </p>
-        <div className="eip-quote-author">
-          <Heart size={12} fill="#f43f5e" color="#f43f5e" />
-          <span>Krishna Creation — Mumbai</span>
-        </div>
-      </div>
-
-      {/* CTA */}
-      <div className="eip-cta-wrap">
-        <Link
-          to="/contact"
-          onClick={() => {
-            trackEnquiryCTA('Book for Your Event');
-            setTimeout(() => { window.location.hash = 'contact-us'; }, 100);
-          }}
-          className="eip-cta-btn"
-          id="eip-book-event-cta"
+        <button
+          type="button"
+          className="eip-modal-close"
+          onClick={onClose}
+          aria-label="Close Live Event Printing Booth modal"
         >
-          <span className="eip-cta-icon">📸</span>
-          Book for Your Event
-          <ArrowRight size={16} />
-        </Link>
+          <X size={18} />
+        </button>
+
+        <div className="eip-modal-scroll">
+          {/* Eyebrow */}
+          <div className="eip-eyebrow">
+            <Sparkles size={13} />
+            <span>Live Event Printing Booth</span>
+          </div>
+
+          {/* Headline */}
+          <h2 id="eip-modal-title" className="eip-headline eip-modal-title">
+            Your Guests Leave With
+            <span className="eip-headline-accent"><br />A Memory In Hand</span>
+          </h2>
+          <p className="eip-subline">
+            Book our on-site live instant printing booth across Mumbai for <strong>weddings, birthdays, receptions, and corporate events</strong>. While your guests enjoy the event, we shoot, print, and pack personalised photo keepsakes live on the spot.
+          </p>
+
+          {/* Supported event types */}
+          <div className="eip-event-tags">
+            {eventTypes.map(type => (
+              <span key={type} className="eip-event-tag">
+                🎉 {type}
+              </span>
+            ))}
+          </div>
+
+          {/* Feature pills */}
+          <div className="eip-pills">
+            {features.map(f => (
+              <div key={f.label} className="eip-pill">
+                <span className="eip-pill-icon">{f.icon}</span>
+                {f.label}
+              </div>
+            ))}
+          </div>
+
+          {/* How it works */}
+          <div className="eip-steps-wrap">
+            <p className="eip-steps-label">How It Works</p>
+            <div className="eip-steps">
+              {steps.map((s, i) => (
+                <React.Fragment key={s.title}>
+                  <div className="eip-step">
+                    <div className="eip-step-icon">{s.icon}</div>
+                    <div className="eip-step-num">0{i + 1}</div>
+                    <h3 className="eip-step-title">{s.title}</h3>
+                    <p className="eip-step-desc">{s.desc}</p>
+                  </div>
+                  {i < steps.length - 1 && <div className="eip-step-connector" />}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+
+          {/* Pull quote */}
+          <div className="eip-quote">
+            <div className="eip-quote-mark">"</div>
+            <p className="eip-quote-text">
+              Not every return gift survives the week.<br />A photo lasts a lifetime.
+            </p>
+            <div className="eip-quote-author">
+              <Heart size={12} fill="#f43f5e" color="#f43f5e" />
+              <span>Krishna Creation — Mumbai</span>
+            </div>
+          </div>
+
+          {/* CTAs */}
+          <div className="eip-cta-wrap">
+            <div className="eip-modal-actions">
+              <Link
+                to="/contact"
+                onClick={() => {
+                  trackEnquiryCTA('Book for Your Event');
+                  onClose();
+                  setTimeout(() => { window.location.hash = 'contact-us'; }, 100);
+                }}
+                className="eip-cta-btn"
+                id="eip-book-event-cta"
+              >
+                <span className="eip-cta-icon">📸</span>
+                Book for Your Event
+                <ArrowRight size={16} />
+              </Link>
+              {contactNumber && (
+                <a
+                  href={`https://wa.me/${contactNumber}?text=${encodeURIComponent("Hi! I'd like to enquire about booking the Live Event Printing Booth for an upcoming event.")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="eip-wa-btn"
+                  onClick={() => trackContactInfoClick('WhatsApp (Live Event Booth Modal)')}
+                >
+                  <MessageCircle size={16} />
+                  <span>WhatsApp Us</span>
+                </a>
+              )}
+            </div>
+            <p className="eip-cta-note">Serving Mumbai, Navi Mumbai &amp; Thane · Same-day event quotes</p>
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
   );
 };
 

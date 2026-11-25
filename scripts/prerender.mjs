@@ -129,8 +129,7 @@ async function run() {
     ipHtml.includes('aria-label="Loading page"') ||
     !ipHtml.includes('Custom Photo Mugs') ||
     !ipHtml.includes('Popular Gift Combos') ||
-    !ipHtml.includes('Live Event Printing Booth') ||
-    !ipHtml.includes('Book for Your Event')
+    !ipHtml.includes('Live Event Printing Booth')
   ) {
     throw new Error('Pre-rendered /instant-printing/index.html failed content verification');
   }
