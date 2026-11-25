@@ -12,18 +12,35 @@ import {
 
 // ─── Animated counter hook ────────────────────────────────────────────────────
 function useCountUp(target: number, duration = 1800, start = false) {
-  const [count, setCount] = useState(0);
+  // Default to target so initial HTML/DOM renders real numbers for crawlers before scroll
+  const [count, setCount] = useState(target);
+  const hasCompletedRef = useRef(false);
+
   useEffect(() => {
-    if (!start) return;
+    if (!start || hasCompletedRef.current) return;
+    if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      hasCompletedRef.current = true;
+      return;
+    }
+
     let startTime: number | null = null;
+    let rafId = 0;
+
     const step = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
+      if (startTime === null) startTime = timestamp;
       const progress = Math.min((timestamp - startTime) / duration, 1);
       setCount(Math.floor(progress * target));
-      if (progress < 1) requestAnimationFrame(step);
+      if (progress < 1) {
+        rafId = requestAnimationFrame(step);
+      } else {
+        hasCompletedRef.current = true;
+      }
     };
-    requestAnimationFrame(step);
+
+    rafId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(rafId);
   }, [target, duration, start]);
+
   return count;
 }
 
@@ -87,7 +104,7 @@ function useIsDesktop(breakpoint = 768) {
 
 const stats = [
   { value: 15, suffix: '+', label: 'Years of Excellence' },
-  { value: 2000, suffix: '+', label: 'Happy Clients' },
+  { value: 200, suffix: '+', label: 'Happy Clients' },
 ];
 
 const services = [
@@ -167,8 +184,8 @@ const Home: React.FC = () => {
   return (
     <div className="home-page">
       <Helmet>
-        <title>Krishna Creation | Best Photography Studio in Mumbai – Wedding, Pre-Wedding & Event Photography</title>
-        <meta name="description" content="Krishna Creation – Mumbai's best photography studio by Nikunj Sindhwad & Kunj Sindhwad. Wedding photography, pre-wedding shoots, haldi, sangeet, engagement, portrait & candid photography. Cinematic reels & 4K videography. 15+ years, 2000+ happy clients. Book now!" />
+        <title>Krishna Creation | Wedding & Event Photography in Mumbai</title>
+        <meta name="description" content="15+ years & 500+ events in Mumbai. Book candid wedding photography, 4K cinematic films, same-day reels, and live instant photo & mug printing. Call today!" />
         <meta name="keywords" content="best photography studio Mumbai, best wedding photographer Mumbai, photography near me Mumbai, wedding photography Mumbai, pre-wedding photography Mumbai, candid photography Mumbai, portrait photography, haldi photography Mumbai, sangeet photography, engagement photography Mumbai, event photographer Mumbai, cinematic reels, videography Mumbai, 4K wedding videography, top photographer Mumbai, professional photographer Mumbai, affordable wedding photographer Mumbai, Nikunj Sindhwad photographer, Krishna Creation Mumbai" />
         <link rel="canonical" href="https://krishnacreationphotography.com/" />
         <meta property="og:url" content="https://krishnacreationphotography.com/" />
@@ -230,12 +247,12 @@ const Home: React.FC = () => {
           </div>
 
           <h1 className="hero-title animate-slide-up">
-            Modern Vision,<br />
-            <span className="hero-title-accent">Timeless</span> Memories.
+            Wedding, Pre-Wedding &amp; Event Photography Studio in{' '}
+            <span className="hero-title-accent">Mumbai</span>
           </h1>
 
           <p className="hero-subtitle animate-fade-in">
-            From breathtaking photography to cinematic reels — we craft every detail with artistry and passion.
+            Modern Vision, Timeless Memories — 15+ years of candid photography, 4K cinematic films, same-day reels, and live instant printing across Mumbai.
           </p>
 
           <div className="hero-cta">
@@ -505,6 +522,9 @@ const Home: React.FC = () => {
             <a href={`tel:+${import.meta.env.VITE_CONTACT_NUMBER}`} className="footer-nav-link" onClick={() => trackSocialClick('Phone', 'footer_nav')}>📞 Call Us</a>
             <a href={`mailto:${import.meta.env.VITE_EMAILJS_TO_EMAIL}`} className="footer-nav-link" onClick={() => trackSocialClick('Email', 'footer_nav')}>✉ Mail Us</a>
             <a href="https://www.instagram.com/krishna_creation10" target="_blank" rel="noopener noreferrer" className="footer-nav-link" onClick={() => trackSocialClick('Instagram', 'footer_nav')}>📸 Instagram</a>
+            <address className="footer-address">
+              📍 Solitaire Edge, Kandivali, Mumbai, Maharashtra – 400101
+            </address>
           </div>
         </div>
 

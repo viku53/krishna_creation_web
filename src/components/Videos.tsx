@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Video, Play, CloudOff, Loader2 } from 'lucide-react';
+import { Video, Play, CloudOff, Loader2, Film, Sparkles, Clapperboard } from 'lucide-react';
 import { useDriveVideos } from './useDriveVideos';
 import type { DriveVideoItem } from './useDriveVideos';
-import { trackMediaView, trackMediaModalOpen } from '../gtm';
+import { trackMediaView, trackMediaModalOpen, trackEnquiryCTA } from '../gtm';
+import MediaPageHero from './MediaPageHero';
 
 const VIDEOS_FOLDER_ID = import.meta.env.VITE_GOOGLE_DRIVE_VIDEOS_FOLDER_ID as string;
 
@@ -209,14 +210,66 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, index }) => {
   );
 };
 
+// ── Shared SEO metadata for Videos (always emitted, even before Drive loads) ─
+const VideosHelmet: React.FC = () => (
+  <Helmet>
+    <title>Videography Portfolio – Best Cinematic Wedding Films Mumbai | Krishna Creation</title>
+    <meta name="description" content="Watch Krishna Creation's cinematic videography portfolio – full-length wedding films, pre-wedding videos & event coverage in Mumbai. 4K cinematic storytelling by Mumbai's best wedding videographer. Book now!" />
+    <meta name="keywords" content="best wedding videographer Mumbai, cinematic wedding film Mumbai, wedding video Mumbai, pre-wedding video Mumbai, full wedding film, 4K wedding videography Mumbai, event videography Mumbai, Krishna Creation videos, wedding cinematographer Mumbai, candid wedding film, top videographer Mumbai" />
+    <link rel="canonical" href="https://krishnacreationphotography.com/videos" />
+    <meta property="og:url" content="https://krishnacreationphotography.com/videos" />
+    <meta property="og:type" content="video.other" />
+    <meta property="og:title" content="Videography Portfolio | Krishna Creation – Best Wedding Filmmaker Mumbai" />
+    <meta property="og:description" content="Cinematic 4K wedding films & event videography by Krishna Creation, Mumbai's best videography studio." />
+    <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
+    <meta property="og:image:alt" content="Cinematic videography portfolio by Krishna Creation Mumbai" />
+    <script type="application/ld+json">{JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://krishnacreationphotography.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Videography Portfolio", "item": "https://krishnacreationphotography.com/videos" }
+      ]
+    })}</script>
+  </Helmet>
+);
+
+// ── Shared Page Hero for Videos (used by Skeleton, Empty, and Main views) ─────
+const VideosHero: React.FC<{ subtitle: string; count?: number }> = ({ subtitle, count }) => (
+  <MediaPageHero
+    icon={<Video size={24} strokeWidth={1.75} />}
+    badge="4K Cinematic Wedding Films"
+    title="Videography"
+    accent="Portfolio"
+    subtitle={subtitle}
+    backdropImage="/photos/Wedding/12.webp"
+    backdropPosition="center 42%"
+    stats={[
+      { icon: <Clapperboard size={13} />, label: count ? `${count} Films Ready` : 'Full-Length & Teasers' },
+      { icon: <Sparkles size={13} />, label: '4K Cinema Grading' },
+      { label: 'Weddings & Pre-Wedding' },
+    ]}
+    actions={[
+      {
+        label: 'Book Your Film',
+        to: '/contact',
+        onClick: () => trackEnquiryCTA('Videos Hero Book Film'),
+      },
+      {
+        label: 'Watch Reels',
+        to: '/reels',
+        icon: <Film size={15} />,
+        variant: 'secondary',
+      },
+    ]}
+  />
+);
+
 // ── Skeleton loader ────────────────────────────────────────────────────────────
 const VideosSkeleton: React.FC = () => (
   <div className="videos-page">
-    <div className="page-hero page-hero--dark">
-      <div className="page-hero-icon"><Video size={32} strokeWidth={1.5} /></div>
-      <h1 className="page-hero-title">Videography Portfolio</h1>
-      <p className="page-hero-sub">Cinematic wedding films that capture every emotion, beautifully.</p>
-    </div>
+    <VideosHelmet />
+    <VideosHero subtitle="Cinematic wedding films that capture every emotion, beautifully." />
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300, color: 'rgba(255,255,255,0.6)', flexDirection: 'column', gap: 12 }}>
       <Loader2 size={40} className="gd-spinner" />
       <p style={{ fontSize: '0.9rem' }}>Loading videos from Google Drive…</p>
@@ -227,11 +280,8 @@ const VideosSkeleton: React.FC = () => (
 // ── Empty / Error state ────────────────────────────────────────────────────────
 const VideosEmpty: React.FC<{ error?: string | null }> = ({ error }) => (
   <div className="videos-page">
-    <div className="page-hero page-hero--dark">
-      <div className="page-hero-icon"><Video size={32} strokeWidth={1.5} /></div>
-      <h1 className="page-hero-title">Videography Portfolio</h1>
-      <p className="page-hero-sub">Cinematic wedding films that capture every emotion, beautifully.</p>
-    </div>
+    <VideosHelmet />
+    <VideosHero subtitle="Cinematic wedding films that capture every emotion, beautifully." />
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300, color: 'rgba(255,255,255,0.5)', flexDirection: 'column', gap: 16, padding: '2rem' }}>
       <CloudOff size={48} />
       <p style={{ textAlign: 'center', maxWidth: 320, lineHeight: 1.6, fontSize: '0.9rem' }}>
@@ -274,36 +324,13 @@ const Videos: React.FC = () => {
 
   return (
     <div className="videos-page">
-      <Helmet>
-        <title>Videography Portfolio – Best Cinematic Wedding Films Mumbai | Krishna Creation</title>
-        <meta name="description" content="Watch Krishna Creation's cinematic videography portfolio – full-length wedding films, pre-wedding videos & event coverage in Mumbai. 4K cinematic storytelling by Mumbai's best wedding videographer. Book now!" />
-        <meta name="keywords" content="best wedding videographer Mumbai, cinematic wedding film Mumbai, wedding video Mumbai, pre-wedding video Mumbai, full wedding film, 4K wedding videography Mumbai, event videography Mumbai, Krishna Creation videos, wedding cinematographer Mumbai, candid wedding film, top videographer Mumbai" />
-        <link rel="canonical" href="https://krishnacreationphotography.com/videos" />
-        <meta property="og:url" content="https://krishnacreationphotography.com/videos" />
-        <meta property="og:type" content="video.other" />
-        <meta property="og:title" content="Videography Portfolio | Krishna Creation – Best Wedding Filmmaker Mumbai" />
-        <meta property="og:description" content="Cinematic 4K wedding films & event videography by Krishna Creation, Mumbai's best videography studio." />
-        <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
-        <meta property="og:image:alt" content="Cinematic videography portfolio by Krishna Creation Mumbai" />
-        <script type="application/ld+json">{JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "BreadcrumbList",
-          "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://krishnacreationphotography.com/" },
-            { "@type": "ListItem", "position": 2, "name": "Videography Portfolio", "item": "https://krishnacreationphotography.com/videos" }
-          ]
-        })}</script>
-      </Helmet>
+      <VideosHelmet />
 
       {/* Page Hero */}
-      <div className="page-hero page-hero--dark">
-        <div className="page-hero-icon"><Video size={32} strokeWidth={1.5} /></div>
-        <h1 className="page-hero-title">Videography Portfolio</h1>
-        <p className="page-hero-sub">
-          Cinematic wedding films that capture every emotion, beautifully.
-          Experience the moving stories, grand celebrations, and intimate moments crafted into visual masterpieces.
-        </p>
-      </div>
+      <VideosHero
+        subtitle="Cinematic wedding films that capture every emotion, beautifully — experience moving stories, grand celebrations, and intimate moments in 4K."
+        count={videos.length}
+      />
 
       {/* Filter Bar */}
       <div className="filter-bar filter-bar--dark">

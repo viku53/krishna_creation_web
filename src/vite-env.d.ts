@@ -13,6 +13,10 @@ interface ImportMetaEnv {
   readonly VITE_GOOGLE_DRIVE_API_KEY: string;
   readonly VITE_GOOGLE_DRIVE_VIDEOS_FOLDER_ID: string;
   readonly VITE_GOOGLE_DRIVE_REELS_FOLDER_ID: string;
+  readonly VITE_GA_ID: string;
+  readonly NEXT_PUBLIC_GA_ID: string;
+  readonly VITE_META_PIXEL_ID: string;
+  readonly NEXT_PUBLIC_META_PIXEL_ID: string;
 }
 
 interface ImportMeta {
