@@ -2,8 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import MediaModal from './MediaModal';
 import { useMediaModal } from './useMediaModal';
-import { Camera } from 'lucide-react';
-import { trackMediaView, trackMediaModalOpen } from '../gtm';
+import { Camera, Sparkles, Heart, Video } from 'lucide-react';
+import { trackMediaView, trackMediaModalOpen, trackEnquiryCTA } from '../gtm';
+import MediaPageHero from './MediaPageHero';
 
 // ─── Categories ───────────────────────────────────────────────────────────────
 const categories = ['Wedding', 'Haldi', 'Sangeet', 'Pre-Wedding', 'Engagement'] as const;
@@ -100,7 +101,7 @@ const LOAD_MORE_BATCH = 12;
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const Photos: React.FC = () => {
-  const [selected, setSelected] = useState<'All' | Category>('All');
+  const [selected, setSelected] = useState<'All' | Category>('Wedding');
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH);
   const [prevCount, setPrevCount] = useState(0);
@@ -225,23 +226,36 @@ const Photos: React.FC = () => {
       </Helmet>
 
       {/* ── Page Hero ──────────────────────────────────────────── */}
-      <div className="page-hero page-hero--dark">
-        <div className="page-hero-icon"><Camera size={32} strokeWidth={1.5} /></div>
-        <h1 className="page-hero-title">Photography Portfolio</h1>
-        <p className="page-hero-sub">
-          Every frame tells a story. From candid moments of pure joy to breathtaking portraits,
-          explore our collection of timeless captures that define the essence of your special day.
-        </p>
-      </div>
+      <MediaPageHero
+        icon={<Camera size={24} strokeWidth={1.75} />}
+        badge="Mumbai Photography Portfolio"
+        title="Photography"
+        accent="Portfolio"
+        subtitle="Every frame tells a story. From candid moments of pure joy to breathtaking portraits crafted across weddings, haldi, sangeet, and pre-wedding celebrations."
+        backdropImage="/photos/Wedding/01.webp"
+        backdropPosition="center 24%"
+        stats={[
+          { icon: <Sparkles size={13} />, label: `${ALL_PHOTOS.length}+ Curated Captures` },
+          { icon: <Heart size={13} />, label: '5 Ceremony Styles' },
+          { label: 'Mumbai · Navi Mumbai · Thane' },
+        ]}
+        actions={[
+          {
+            label: 'Book a Shoot',
+            to: '/contact',
+            onClick: () => trackEnquiryCTA('Photos Hero Book a Shoot'),
+          },
+          {
+            label: 'Watch 4K Films',
+            to: '/videos',
+            icon: <Video size={15} />,
+            variant: 'secondary',
+          },
+        ]}
+      />
 
       {/* ── Category Filter ────────────────────────────────────── */}
       <div className="filter-bar filter-bar--dark">
-        <button
-          onClick={() => handleCategorySelect('All')}
-          className={`filter-pill filter-pill--dark ${selected === 'All' ? 'filter-pill--active-dark' : ''}`}
-        >
-          All ({shuffled.length})
-        </button>
         {categories.map(cat => {
           const count = shuffled.filter(p => p.category === cat).length;
           return (
@@ -254,11 +268,12 @@ const Photos: React.FC = () => {
             </button>
           );
         })}
-      </div>
-
-      {/* ── Photo count ────────────────────────────────────────── */}
-      <div className="photos-count">
-        Showing {visiblePhotos.length} of {filteredPhotos.length} photos
+        <button
+          onClick={() => handleCategorySelect('All')}
+          className={`filter-pill filter-pill--dark ${selected === 'All' ? 'filter-pill--active-dark' : ''}`}
+        >
+          All ({shuffled.length})
+        </button>
       </div>
 
       {/* ── Photo Grid ─────────────────────────────────────────── */}

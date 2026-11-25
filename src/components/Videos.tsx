@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Video, Play, CloudOff, Loader2 } from 'lucide-react';
+import { Video, Play, CloudOff, Loader2, Film, Sparkles, Clapperboard } from 'lucide-react';
 import { useDriveVideos } from './useDriveVideos';
 import type { DriveVideoItem } from './useDriveVideos';
-import { trackMediaView, trackMediaModalOpen } from '../gtm';
+import { trackMediaView, trackMediaModalOpen, trackEnquiryCTA } from '../gtm';
+import MediaPageHero from './MediaPageHero';
 
 const VIDEOS_FOLDER_ID = import.meta.env.VITE_GOOGLE_DRIVE_VIDEOS_FOLDER_ID as string;
 
@@ -233,15 +234,42 @@ const VideosHelmet: React.FC = () => (
   </Helmet>
 );
 
+// ── Shared Page Hero for Videos (used by Skeleton, Empty, and Main views) ─────
+const VideosHero: React.FC<{ subtitle: string; count?: number }> = ({ subtitle, count }) => (
+  <MediaPageHero
+    icon={<Video size={24} strokeWidth={1.75} />}
+    badge="4K Cinematic Wedding Films"
+    title="Videography"
+    accent="Portfolio"
+    subtitle={subtitle}
+    backdropImage="/photos/Wedding/12.webp"
+    backdropPosition="center 42%"
+    stats={[
+      { icon: <Clapperboard size={13} />, label: count ? `${count} Films Ready` : 'Full-Length & Teasers' },
+      { icon: <Sparkles size={13} />, label: '4K Cinema Grading' },
+      { label: 'Weddings & Pre-Wedding' },
+    ]}
+    actions={[
+      {
+        label: 'Book Your Film',
+        to: '/contact',
+        onClick: () => trackEnquiryCTA('Videos Hero Book Film'),
+      },
+      {
+        label: 'Watch Reels',
+        to: '/reels',
+        icon: <Film size={15} />,
+        variant: 'secondary',
+      },
+    ]}
+  />
+);
+
 // ── Skeleton loader ────────────────────────────────────────────────────────────
 const VideosSkeleton: React.FC = () => (
   <div className="videos-page">
     <VideosHelmet />
-    <div className="page-hero page-hero--dark">
-      <div className="page-hero-icon"><Video size={32} strokeWidth={1.5} /></div>
-      <h1 className="page-hero-title">Videography Portfolio</h1>
-      <p className="page-hero-sub">Cinematic wedding films that capture every emotion, beautifully.</p>
-    </div>
+    <VideosHero subtitle="Cinematic wedding films that capture every emotion, beautifully." />
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300, color: 'rgba(255,255,255,0.6)', flexDirection: 'column', gap: 12 }}>
       <Loader2 size={40} className="gd-spinner" />
       <p style={{ fontSize: '0.9rem' }}>Loading videos from Google Drive…</p>
@@ -253,11 +281,7 @@ const VideosSkeleton: React.FC = () => (
 const VideosEmpty: React.FC<{ error?: string | null }> = ({ error }) => (
   <div className="videos-page">
     <VideosHelmet />
-    <div className="page-hero page-hero--dark">
-      <div className="page-hero-icon"><Video size={32} strokeWidth={1.5} /></div>
-      <h1 className="page-hero-title">Videography Portfolio</h1>
-      <p className="page-hero-sub">Cinematic wedding films that capture every emotion, beautifully.</p>
-    </div>
+    <VideosHero subtitle="Cinematic wedding films that capture every emotion, beautifully." />
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300, color: 'rgba(255,255,255,0.5)', flexDirection: 'column', gap: 16, padding: '2rem' }}>
       <CloudOff size={48} />
       <p style={{ textAlign: 'center', maxWidth: 320, lineHeight: 1.6, fontSize: '0.9rem' }}>
@@ -303,14 +327,10 @@ const Videos: React.FC = () => {
       <VideosHelmet />
 
       {/* Page Hero */}
-      <div className="page-hero page-hero--dark">
-        <div className="page-hero-icon"><Video size={32} strokeWidth={1.5} /></div>
-        <h1 className="page-hero-title">Videography Portfolio</h1>
-        <p className="page-hero-sub">
-          Cinematic wedding films that capture every emotion, beautifully.
-          Experience the moving stories, grand celebrations, and intimate moments crafted into visual masterpieces.
-        </p>
-      </div>
+      <VideosHero
+        subtitle="Cinematic wedding films that capture every emotion, beautifully — experience moving stories, grand celebrations, and intimate moments in 4K."
+        count={videos.length}
+      />
 
       {/* Filter Bar */}
       <div className="filter-bar filter-bar--dark">

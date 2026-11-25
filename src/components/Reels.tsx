@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
-import { Film, Loader2, CloudOff, Instagram, Volume2, VolumeX, AlertCircle } from "lucide-react";
+import { Film, Loader2, CloudOff, Instagram, Volume2, VolumeX, AlertCircle, Sparkles, Smartphone } from "lucide-react";
 import { useDriveVideos } from "./useDriveVideos";
 import type { DriveVideoItem } from "./useDriveVideos";
-import { trackMediaView, trackOutboundClick } from "../gtm";
+import { trackMediaView, trackOutboundClick, trackEnquiryCTA } from "../gtm";
+import MediaPageHero from "./MediaPageHero";
 
 const REELS_FOLDER_ID = import.meta.env.VITE_GOOGLE_DRIVE_REELS_FOLDER_ID as string;
 
@@ -41,15 +42,43 @@ const ReelsHelmet: React.FC = () => (
   </Helmet>
 );
 
+// ── Shared Page Hero for Reels (used by Skeleton, Empty, and Main views) ──────
+const ReelsHero: React.FC<{ subtitle: string; count?: number }> = ({ subtitle, count }) => (
+  <MediaPageHero
+    icon={<Film size={24} strokeWidth={1.75} />}
+    badge="Vertical Cinema · Same-Day Edits"
+    title="Cinematic"
+    accent="Reels"
+    subtitle={subtitle}
+    backdropImage="/photos/Haldi/05.webp"
+    backdropPosition="center 26%"
+    stats={[
+      { icon: <Smartphone size={13} />, label: count ? `${count} Reels Loaded` : '9:16 Vertical Format' },
+      { icon: <Volume2 size={13} />, label: 'Tap Video for Sound' },
+      { icon: <Sparkles size={13} />, label: 'Same-Day Wedding Edits' },
+    ]}
+    actions={[
+      {
+        label: 'Book Reel Coverage',
+        to: '/contact',
+        onClick: () => trackEnquiryCTA('Reels Hero Book Coverage'),
+      },
+      {
+        label: 'Follow on Instagram',
+        href: 'https://www.instagram.com/krishna_creation10/reels',
+        icon: <Instagram size={15} />,
+        variant: 'secondary',
+        onClick: () => trackOutboundClick('https://www.instagram.com/krishna_creation10/reels', 'Follow on Instagram'),
+      },
+    ]}
+  />
+);
+
 // ── Loading skeleton ──────────────────────────────────────────────────────────
 const ReelSkeleton: React.FC = () => (
   <div className="reel-page">
     <ReelsHelmet />
-    <div className="page-hero page-hero--dark">
-      <div className="page-hero-icon"><Film size={32} strokeWidth={1.5} /></div>
-      <h1 className="page-hero-title">Reels</h1>
-      <p className="page-hero-sub">Short cinematic clips from our best sessions.</p>
-    </div>
+    <ReelsHero subtitle="Short cinematic highlight films crafted for Mumbai weddings & events." />
     <div className="reel-wrapper">
       <div className="reel-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#111' }}>
         <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}>
@@ -65,11 +94,7 @@ const ReelSkeleton: React.FC = () => (
 const ReelEmpty: React.FC<{ error?: string | null }> = ({ error }) => (
   <div className="reel-page">
     <ReelsHelmet />
-    <div className="page-hero page-hero--dark">
-      <div className="page-hero-icon"><Film size={32} strokeWidth={1.5} /></div>
-      <h1 className="page-hero-title">Reels</h1>
-      <p className="page-hero-sub">Short cinematic clips from our best sessions.</p>
-    </div>
+    <ReelsHero subtitle="Short cinematic highlight films crafted for Mumbai weddings & events." />
     <div className="reel-wrapper">
       <div className="reel-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', background: '#111' }}>
         <CloudOff size={40} style={{ color: 'rgba(255,255,255,0.4)' }} />
@@ -227,14 +252,10 @@ const ReelViewer: React.FC<{ reelList: DriveVideoItem[] }> = ({ reelList }) => {
       <ReelsHelmet />
 
       {/* Page Hero */}
-      <div className="page-hero page-hero--dark">
-        <div className="page-hero-icon"><Film size={32} strokeWidth={1.5} /></div>
-        <h1 className="page-hero-title">Reels</h1>
-        <p className="page-hero-sub">
-          Short cinematic clips from our best sessions.
-          Tap the video to turn sound on — swipe to watch more.
-        </p>
-      </div>
+      <ReelsHero
+        subtitle="Short cinematic highlight films from our Mumbai weddings & shoots — tap the video for sound and swipe or use ↑ / ↓ to explore."
+        count={reelList.length}
+      />
 
       {/* Reel Container */}
       <div className="reel-wrapper">
