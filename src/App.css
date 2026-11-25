@@ -68,14 +68,14 @@
   color: #888;
 }
 
-.bg-cream {
-  background-color: #FAFAF8;
+.app-shell {
+  background-color: #0f0f1a;
 }
 
 body {
   margin: 0;
   font-family: 'Inter', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-  background: #FAFAF8;
+  background: #0f0f1a;
 }
 
 @media (max-width: 640px) {
@@ -153,83 +153,89 @@ body {
   }
 }
 
-/* Floating nav shadow rgba(85, 85, 99, 0.65);*/
+/* Floating dark frosted bottom navigation */
 .nav--fixed {
   position: fixed;
   display: flex;
-  z-index: 9999;
+  align-items: center;
   justify-content: space-around;
-  width: 95%;
-  background: rgba(106, 106, 119, 0.65);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(2px) saturate(180%);
-  -webkit-backdrop-filter: blur(2px) saturate(180%);
+  gap: 0.2rem;
+  z-index: 9999;
+  width: min(94%, 640px);
+  padding: 0.32rem;
+  background: rgba(15, 15, 28, 0.86);
+  box-shadow: 0 12px 38px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
   align-self: center;
-  bottom: 16px;
-  border-radius: 25px;
-  height: 4rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-
-  @media (min-width:767px) {
-    width: 60%;
-  }
-
-  @media (min-width:1440px) {
-    width: 50%;
-  }
-}
-
-.nav--item:hover {
-  padding: 0 1rem;
-  color: #e9e9e9;
-}
-
-.nav--item__active:hover {
-  color: #f43f5e;
-}
-
-.nav--text {
-  transition: all 0.5s ease;
-}
-
-.nav--item__active:hover .nav--text {
-  display: none;
+  bottom: 14px;
+  border-radius: 22px;
+  height: 4.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  box-sizing: border-box;
 }
 
 .nav--item {
-  padding: 1rem;
-  border-radius: 25px;
-  color: #e9e9e9;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0.35rem 0.25rem;
+  border-radius: 16px;
+  color: rgba(255, 255, 255, 0.58);
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.nav--item:hover {
+  color: #fda4af;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav--icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.nav--icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.nav--item:hover .nav--icon {
+  transform: translateY(-1px);
+}
+
+.nav--text {
+  font-size: 0.62rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
 .nav--item__active {
-  border: 1px solid rgba(244, 63, 94, 0.3);
-  background: rgba(244, 63, 94, 0.12);
-  box-shadow: 0 4px 18px rgba(244, 63, 94, 0.25);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  color: #f43f5e;
-  animation: navGlassSlide 0.6s cubic-bezier(.4, 0, .2, 1);
+  border-color: rgba(244, 63, 94, 0.38);
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.18), rgba(251, 146, 60, 0.12));
+  box-shadow: 0 4px 16px rgba(244, 63, 94, 0.22);
+  color: #fb7185;
 }
 
-@keyframes navGlassSlide {
-  0% {
-    transform: translateX(var(--nav-slide-from, 0)) scale(0.95);
-    opacity: 0.7;
-    filter: blur(1px);
-  }
+.nav--item__active:hover {
+  color: #fda4af;
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.24), rgba(251, 146, 60, 0.16));
+}
 
-  60% {
-    transform: translateX(0) scale(1.05);
-    opacity: 1;
-    filter: blur(1px);
-  }
-
-  100% {
-    transform: translateX(0) scale(1);
-    opacity: 1;
-    filter: blur(0);
-  }
+.nav--item__active .nav--text {
+  font-weight: 700;
 }
 
 .header--main {
@@ -1233,6 +1239,7 @@ input[type="submit"] {
   box-sizing: border-box;
   background: #fafaf8;
   min-height: 100vh;
+  padding-bottom: 6rem;
 }
 
 .photos-page.dark-theme {
@@ -1543,7 +1550,7 @@ input[type="submit"] {
   box-sizing: border-box;
   background: #0f0f1a;
   min-height: 100vh;
-  padding-bottom: 4rem;
+  padding-bottom: 6rem;
 }
 
 .videos-grid {
@@ -1693,7 +1700,7 @@ input[type="submit"] {
   box-sizing: border-box;
   background: #0f0f1a;
   min-height: 100vh;
-  padding-bottom: 5rem;
+  padding-bottom: 6rem;
 }
 
 .reel-wrapper {

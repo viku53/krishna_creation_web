@@ -13,24 +13,46 @@ const navLinks = [
 interface BottomNavProps {
   scrollToTop: () => void;
 }
+
+/** Highlight matching top-level tab including product, checkout, and track-order sub-routes. */
+function isRouteActive(pathname: string, to: string): boolean {
+  if (to === '/') return pathname === '/';
+  if (to === '/instant-printing') {
+    return (
+      pathname === '/instant-printing' ||
+      pathname.startsWith('/instant-printing/') ||
+      pathname === '/checkout' ||
+      pathname === '/track-order'
+    );
+  }
+  return pathname === to || pathname.startsWith(`${to}/`);
+}
+
 function BottomNav({ scrollToTop }: BottomNavProps) {
   const location = useLocation();
   return (
-    <nav className="nav--fixed">
-      {navLinks.map(link => (
-        <Link
-          key={link.to}
-          to={link.to}
-          aria-label={link.label}
-          onClick={() => { trackBottomNavClick(link.label); setTimeout(scrollToTop, 100); }}
-          className={`group flex flex-col items-center justify-center flex-1 nav--item ${location.pathname === link.to ? 'nav--item__active' : 'text-gray-500 hover:text-rose-400'} transition-all`}
-        >
-          {link.icon}
-          <span className="nav--text hidden group-hover:block">{link.label}</span>
-        </Link>
-      ))}
+    <nav className="nav--fixed" aria-label="Main navigation">
+      {navLinks.map(link => {
+        const isActive = isRouteActive(location.pathname, link.to);
+        return (
+          <Link
+            key={link.to}
+            to={link.to}
+            aria-label={link.label}
+            aria-current={isActive ? 'page' : undefined}
+            onClick={() => {
+              trackBottomNavClick(link.label);
+              setTimeout(scrollToTop, 100);
+            }}
+            className={`nav--item ${isActive ? 'nav--item__active' : ''}`}
+          >
+            <span className="nav--icon">{link.icon}</span>
+            <span className="nav--text">{link.label}</span>
+          </Link>
+        );
+      })}
     </nav>
   );
-};
+}
 
 export default BottomNav;

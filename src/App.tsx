@@ -64,7 +64,7 @@ export function AppContent({ routes = defaultRoutes }: { routes?: RouteComponent
   };
 
   return (
-    <div className="min-h-screen w-full overflow-x-clip bg-cream flex flex-col pb-16">
+    <div className="min-h-screen w-full overflow-x-clip app-shell flex flex-col">
       <AnalyticsHead />
       <main className="flex-1 min-w-0 w-full">
         <Suspense fallback={<PageLoader />}>
