@@ -18,12 +18,11 @@ import {
   Zap,
   Printer,
   Truck,
-  Upload,
   X,
   MessageCircle,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { products, giftCombos } from '../data/products';
+import { products, giftCombos, buildWhatsAppOrderUrl } from '../data/products';
 import {
   trackProductClick,
   trackEnquiryCTA,
@@ -31,6 +30,7 @@ import {
   trackSocialClick,
   trackHeroCTA,
   trackContactInfoClick,
+  trackWhatsAppOrderClick,
 } from '../gtm';
 
 // ─── Coming Soon Flag ─────────────────────────────────────────────────────────
@@ -321,69 +321,99 @@ const ProductListing: React.FC = () => {
           </p>
         </div>
 
+        {/* Trust & Urgency Bar */}
+        <div className="plp-trust-bar" aria-label="Studio guarantees">
+          <span>Printed in Mumbai</span>
+          <span className="plp-trust-dot" aria-hidden="true">•</span>
+          <span>Same-Day Delivery Available</span>
+          <span className="plp-trust-dot" aria-hidden="true">•</span>
+          <span>500+ Events Covered</span>
+          <span className="plp-trust-dot" aria-hidden="true">•</span>
+          <span>WhatsApp Support</span>
+        </div>
+
         <div className="plp-grid">
           {products.map((product, idx) => (
-            <Link
-              to={`/instant-printing/${product.id}`}
+            <article
               key={product.id}
               className="plp-card"
               style={{ animationDelay: `${idx * 0.06}s` }}
-              onClick={() => trackProductClick(product.id, product.title, product.numericPrice)}
             >
-              {/* WebP Product Image + Price + Delivery Badge */}
-              <div className="plp-card-visual" style={{ background: product.gradient }}>
-                <img
-                  src={product.image}
-                  alt={product.imageAlt}
-                  loading="lazy"
-                  width={600}
-                  height={600}
-                  className="plp-card-img"
-                />
-                <div className="plp-card-price">{product.price}</div>
-                <div className="plp-delivery-badge">
-                  <Truck size={11} />
-                  <span>{product.deliveryBadge}</span>
+              <Link
+                to={`/instant-printing/${product.id}`}
+                className="plp-card-link"
+                onClick={() => trackProductClick(product.id, product.title, product.numericPrice)}
+              >
+                {/* WebP Product Image + Price + Delivery Badge */}
+                <div className="plp-card-visual" style={{ background: product.gradient }}>
+                  <img
+                    src={product.image}
+                    alt={product.imageAlt}
+                    loading="lazy"
+                    width={600}
+                    height={600}
+                    className="plp-card-img"
+                  />
+                  <div className="plp-card-price">{product.price}</div>
+                  <div className="plp-delivery-badge">
+                    <Truck size={11} />
+                    <span>{product.deliveryBadge}</span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Card Body */}
-              <div className="plp-card-info">
-                <h3 className="plp-card-title">{product.title}</h3>
-                <p className="plp-card-subtitle">{product.subtitle}</p>
+                {/* Card Summary */}
+                <div className="plp-card-info">
+                  <h3 className="plp-card-title">{product.title}</h3>
+                  <p className="plp-card-subtitle">{product.subtitle}</p>
 
-                {/* Rating */}
-                <div className="plp-card-rating">
-                  <div className="plp-stars">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        size={12}
-                        fill={i < Math.floor(product.rating) ? '#f59e0b' : 'transparent'}
-                        color={i < Math.floor(product.rating) ? '#f59e0b' : 'rgba(255,255,255,0.2)'}
-                      />
+                  {/* Rating */}
+                  <div className="plp-card-rating">
+                    <div className="plp-stars">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          size={12}
+                          fill={i < Math.floor(product.rating) ? '#f59e0b' : 'transparent'}
+                          color={i < Math.floor(product.rating) ? '#f59e0b' : 'rgba(255,255,255,0.2)'}
+                        />
+                      ))}
+                    </div>
+                    <span className="plp-rating-text">
+                      {product.rating} ({product.reviews})
+                    </span>
+                  </div>
+
+                  {/* Tags */}
+                  <div className="plp-card-tags">
+                    {product.tags.map(tag => (
+                      <span key={tag} className="plp-tag">{tag}</span>
                     ))}
                   </div>
-                  <span className="plp-rating-text">
-                    {product.rating} ({product.reviews})
-                  </span>
                 </div>
+              </Link>
 
-                {/* Tags */}
-                <div className="plp-card-tags">
-                  {product.tags.map(tag => (
-                    <span key={tag} className="plp-tag">{tag}</span>
-                  ))}
-                </div>
-
-                {/* Customization & Upload CTA */}
-                <div className="plp-card-cta" style={{ color: product.accentColor }}>
-                  <Upload size={13} />
-                  <span>Upload Photo &amp; Customize</span>
+              {/* Card CTAs */}
+              <div className="plp-card-actions">
+                <Link
+                  to={`/instant-printing/${product.id}`}
+                  className="plp-order-btn"
+                  onClick={() => trackProductClick(product.id, product.title, product.numericPrice)}
+                >
+                  <span>Order Now</span>
                   <ArrowRight size={14} />
-                </div>
+                </Link>
+                <a
+                  href={buildWhatsAppOrderUrl(product.title, product.price)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="plp-wa-btn"
+                  onClick={() => trackWhatsAppOrderClick(product.id, product.title, product.numericPrice, 'storefront_card')}
+                >
+                  <MessageCircle size={14} />
+                  <span>Order on WhatsApp</span>
+                </a>
               </div>
-            </Link>
+            </article>
           ))}
         </div>
 
@@ -404,40 +434,58 @@ const ProductListing: React.FC = () => {
             {giftCombos.map(combo => {
               const savings = combo.compareAtPrice - combo.price;
               return (
-                <Link
-                  key={combo.id}
-                  to={`/instant-printing/gift-combos?combo=${combo.id}`}
-                  className="aov-combo-card"
-                  onClick={() => trackProductClick(`gift-combo-${combo.id}`, combo.title, combo.price)}
-                >
-                  <div className="aov-combo-thumb">
-                    <img
-                      src={combo.image}
-                      alt={combo.imageAlt}
-                      loading="lazy"
-                      width={240}
-                      height={240}
-                    />
-                  </div>
-                  <div className="aov-combo-body">
-                    <span className="aov-combo-badge">{combo.badge}</span>
-                    <h3 className="aov-combo-name">{combo.title}</h3>
-                    <p className="aov-combo-contents">{combo.contents}</p>
-                    <div className="aov-combo-pricing">
-                      <span className="aov-combo-price">₹{combo.price}</span>
-                      <span className="aov-combo-compare">₹{combo.compareAtPrice}</span>
-                      <span className="aov-combo-save">Save ₹{savings}</span>
+                <article key={combo.id} className="aov-combo-card">
+                  <Link
+                    to={`/instant-printing/gift-combos?combo=${combo.id}`}
+                    className="aov-combo-link"
+                    onClick={() => trackProductClick(`gift-combo-${combo.id}`, combo.title, combo.price)}
+                  >
+                    <div className="aov-combo-thumb">
+                      <img
+                        src={combo.image}
+                        alt={combo.imageAlt}
+                        loading="lazy"
+                        width={240}
+                        height={240}
+                      />
                     </div>
-                    <div className="aov-combo-footer">
-                      <span className="aov-combo-delivery">
-                        <Truck size={11} /> {combo.deliveryBadge}
-                      </span>
-                      <span className="aov-combo-cta">
-                        Customize <ArrowRight size={13} />
-                      </span>
+                    <div className="aov-combo-body">
+                      <span className="aov-combo-badge">{combo.badge}</span>
+                      <h3 className="aov-combo-name">{combo.title}</h3>
+                      <p className="aov-combo-contents">{combo.contents}</p>
+                      <div className="aov-combo-pricing">
+                        <span className="aov-combo-price">₹{combo.price}</span>
+                        <span className="aov-combo-compare">₹{combo.compareAtPrice}</span>
+                        <span className="aov-combo-save">Save ₹{savings}</span>
+                      </div>
+                      <div className="aov-combo-footer">
+                        <span className="aov-combo-delivery">
+                          <Truck size={11} /> {combo.deliveryBadge}
+                        </span>
+                      </div>
                     </div>
+                  </Link>
+                  <div className="plp-card-actions plp-card-actions--combo">
+                    <Link
+                      to={`/instant-printing/gift-combos?combo=${combo.id}`}
+                      className="plp-order-btn"
+                      onClick={() => trackProductClick(`gift-combo-${combo.id}`, combo.title, combo.price)}
+                    >
+                      <span>Order Now</span>
+                      <ArrowRight size={14} />
+                    </Link>
+                    <a
+                      href={buildWhatsAppOrderUrl(combo.title, combo.price)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="plp-wa-btn"
+                      onClick={() => trackWhatsAppOrderClick(`gift-combo-${combo.id}`, combo.title, combo.price, 'combo_card', 'Gift Combos')}
+                    >
+                      <MessageCircle size={14} />
+                      <span>Order on WhatsApp</span>
+                    </a>
                   </div>
-                </Link>
+                </article>
               );
             })}
           </div>

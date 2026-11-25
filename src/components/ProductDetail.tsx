@@ -3,9 +3,9 @@ import { Helmet } from 'react-helmet-async';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft, Upload, X, Star, ImagePlus, ZoomIn,
-  Check, Minus, Plus, Sparkles, PackageCheck, Truck,
+  Check, Minus, Plus, Sparkles, PackageCheck, Truck, MessageCircle,
 } from 'lucide-react';
-import { findProductBySlug, giftCombos, type GiftCombo } from '../data/products';
+import { findProductBySlug, giftCombos, buildWhatsAppOrderUrl, type GiftCombo } from '../data/products';
 import { useMediaModal } from './useMediaModal';
 import MediaModal from './MediaModal';
 import {
@@ -18,6 +18,7 @@ import {
   trackPrintSizeSelect,
   trackQuantityChange,
   trackAddToCart,
+  trackWhatsAppOrderClick,
 } from '../gtm';
 
 // ── Mug Themes (loaded from src/assets/mug_themes/) ───────────────────────────
@@ -938,49 +939,81 @@ const ProductDetail: React.FC = () => {
 
         {/* ══════════════ CTA ──────────────────────────────────────────────────── */}
         <div className="pdp-cta-section">
-          <button
-            id="pdp-add-to-cart-btn"
-            className={`pdp-cta-btn ${!canCheckout() ? 'pdp-cta-btn--disabled' : ''}`}
-            disabled={!canCheckout()}
-            onClick={() => {
-              if (product) {
-                const unitPrice = isPrint
-                  ? selectedSize?.price ?? 0
-                  : isCombo
-                    ? selectedCombo.price
-                    : product.numericPrice;
-                const variant = isCombo
-                  ? selectedCombo.title
-                  : isKeychain
-                    ? `${selectedShape.label} Keychain`
-                    : selectedTheme?.name || selectedFrame?.name || selectedSize?.label;
-                trackAddToCart(product.id, product.title, unitPrice, quantity, variant);
-              }
-              navigatingToCheckoutRef.current = true;
-              navigate('/checkout', {
-                state: {
-                  product,
-                  images,           // File[] for Drive upload
-                  imageCount: images.length,
-                  previewUrls,
-                  selectedTheme: isCombo
-                    ? selectedCombo.title
-                    : isKeychain
-                      ? `Shape: ${selectedShape.label}`
-                      : selectedTheme?.name,
-                  selectedFrame: selectedFrame?.name,
-                  selectedSize: selectedSize?.label,
-                  selectedSizeDims: selectedSize?.dims,
-                  quantity,
-                  customPrice,
-                },
-              });
-            }}
-          >
-            <PackageCheck size={18} />
-            {!canCheckout() ? ctaHint() : `Place Order · ${ctaPrice}`}
-          </button>
-          {!canCheckout() && <p className="pdp-cta-hint">{ctaHint()}</p>}
+          {(() => {
+            const waProductName = isCombo
+              ? selectedCombo.title
+              : isPrint && selectedSize
+                ? `${product.title} (${selectedSize.label} × ${quantity})`
+                : isKeychain
+                  ? `${product.title} (${selectedShape.label})`
+                  : `${product.title}${selectedTheme ? ` — ${selectedTheme.name}` : selectedFrame ? ` — ${selectedFrame.name}` : ''}`;
+            const waPrice = customPrice
+              ? `₹${customPrice}`
+              : isCombo
+                ? `₹${selectedCombo.price}`
+                : product.price;
+            const waNumericPrice = customPrice ?? (isCombo ? selectedCombo.price : product.numericPrice);
+
+            return (
+              <div className="pdp-cta-group">
+                <button
+                  id="pdp-add-to-cart-btn"
+                  className={`pdp-cta-btn ${!canCheckout() ? 'pdp-cta-btn--disabled' : ''}`}
+                  disabled={!canCheckout()}
+                  onClick={() => {
+                    const unitPrice = isPrint
+                      ? selectedSize?.price ?? 0
+                      : isCombo
+                        ? selectedCombo.price
+                        : product.numericPrice;
+                    const variant = isCombo
+                      ? selectedCombo.title
+                      : isKeychain
+                        ? `${selectedShape.label} Keychain`
+                        : selectedTheme?.name || selectedFrame?.name || selectedSize?.label;
+                    trackAddToCart(product.id, product.title, unitPrice, quantity, variant);
+                    navigatingToCheckoutRef.current = true;
+                    navigate('/checkout', {
+                      state: {
+                        product,
+                        images,           // File[] for Drive upload
+                        imageCount: images.length,
+                        previewUrls,
+                        selectedTheme: isCombo
+                          ? selectedCombo.title
+                          : isKeychain
+                            ? `Shape: ${selectedShape.label}`
+                            : selectedTheme?.name,
+                        selectedFrame: selectedFrame?.name,
+                        selectedSize: selectedSize?.label,
+                        selectedSizeDims: selectedSize?.dims,
+                        quantity,
+                        customPrice,
+                      },
+                    });
+                  }}
+                >
+                  <PackageCheck size={18} />
+                  {!canCheckout() ? ctaHint() : `Order Now · ${ctaPrice}`}
+                </button>
+                <a
+                  href={buildWhatsAppOrderUrl(waProductName, waPrice)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="pdp-wa-btn"
+                  onClick={() => trackWhatsAppOrderClick(product.id, waProductName, waNumericPrice, 'product_detail')}
+                >
+                  <MessageCircle size={17} />
+                  <span>Order on WhatsApp</span>
+                </a>
+              </div>
+            );
+          })()}
+          {!canCheckout() && (
+            <p className="pdp-cta-hint">
+              {ctaHint()} — or tap <strong>Order on WhatsApp</strong> to share photos in chat
+            </p>
+          )}
         </div>
         </div>
       </div>

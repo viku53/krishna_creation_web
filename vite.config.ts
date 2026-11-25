@@ -6,6 +6,7 @@ const TWO_MONTHS_SECONDS = 2 * 30 * 24 * 60 * 60 // 5 184 000 s
 
 // https://vite.dev/config/
 export default defineConfig(({ isSsrBuild }) => ({
+  envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
   plugins: [
     react(),
     !isSsrBuild &&

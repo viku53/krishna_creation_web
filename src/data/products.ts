@@ -222,3 +222,22 @@ export function findProductBySlug(slug?: string): PrintProduct | undefined {
   if (!slug) return undefined;
   return products.find(p => p.id === slug || p.aliases?.includes(slug));
 }
+
+const DEFAULT_WHATSAPP_NUMBER = '919769989807';
+
+/** Return sanitized studio WhatsApp phone digits, defaulting to 919769989807. */
+export function getWhatsAppNumber(): string {
+  const configured = import.meta.env.VITE_CONTACT_NUMBER;
+  const digits = configured ? configured.replace(/\D/g, '') : '';
+  return digits || DEFAULT_WHATSAPP_NUMBER;
+}
+
+/** Build a URL-encoded 1-tap WhatsApp pre-filled order link with exact product name and price. */
+export function buildWhatsAppOrderUrl(productName: string, price?: string | number): string {
+  const priceText =
+    price !== undefined && price !== ''
+      ? ` (${typeof price === 'number' ? `₹${price}` : price})`
+      : '';
+  const message = `Hi Krishna Creation, I want to order ${productName}${priceText} from krishnacreationphotography.com`;
+  return `https://wa.me/${getWhatsAppNumber()}?text=${encodeURIComponent(message)}`;
+}

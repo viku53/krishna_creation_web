@@ -2,6 +2,7 @@ import { lazy, Suspense, type ComponentType } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./components/Home";
 import BottomNav from "./components/BottomNav";
+import AnalyticsHead from "./components/AnalyticsHead";
 import { HelmetProvider } from "react-helmet-async";
 import { usePageTracking } from "./hooks/usePageTracking";
 import "./App.css";
@@ -64,6 +65,7 @@ export function AppContent({ routes = defaultRoutes }: { routes?: RouteComponent
 
   return (
     <div className="min-h-screen w-full overflow-x-clip bg-cream flex flex-col pb-16">
+      <AnalyticsHead />
       <main className="flex-1 min-w-0 w-full">
         <Suspense fallback={<PageLoader />}>
           <Routes>
