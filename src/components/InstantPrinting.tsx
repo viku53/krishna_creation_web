@@ -1,40 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { ShoppingBag, Bell, Instagram, Mail, Sparkles, ArrowRight, Star, Search, Package, Camera, Heart, Clock, Gift, CheckCircle, Zap, Printer } from 'lucide-react';
+import {
+  ShoppingBag,
+  Bell,
+  Instagram,
+  Mail,
+  Sparkles,
+  ArrowRight,
+  Star,
+  Search,
+  Package,
+  Camera,
+  Heart,
+  Clock,
+  Gift,
+  CheckCircle,
+  Zap,
+  Printer,
+  Truck,
+  Upload,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { products, giftCombos } from '../data/products';
 import { trackProductClick, trackEnquiryCTA, trackNotifySubmit, trackSocialClick, trackHeroCTA } from '../gtm';
 
 // ─── Coming Soon Flag ─────────────────────────────────────────────────────────
 const IS_COMING_SOON = import.meta.env.VITE_INSTANT_PRINTING_COMING_SOON === 'true';
 
-import { products } from '../data/products';
-
-// ═══════════════════════════════════════════════════════════════
-// COMING SOON COMPONENT (existing)
-// ═══════════════════════════════════════════════════════════════
-// const LAUNCH_DATE = new Date('2025-12-01T00:00:00');
-
-// function getTimeLeft() {
-//   const now = new Date();
-//   const diff = LAUNCH_DATE.getTime() - now.getTime();
-//   if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-//   return {
-//     days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-//     hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-//     minutes: Math.floor((diff / (1000 * 60)) % 60),
-//     seconds: Math.floor((diff / 1000) % 60),
-//   };
-// }
-
 const ComingSoon: React.FC = () => {
-  // const [timeLeft, setTimeLeft] = useState(getTimeLeft());
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
-
-  // useEffect(() => {
-  //   const t = setInterval(() => setTimeLeft(getTimeLeft()), 1000);
-  //   return () => clearInterval(t);
-  // }, []);
 
   const handleNotify = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,60 +42,35 @@ const ComingSoon: React.FC = () => {
   return (
     <div className="coming-soon-page">
       <Helmet>
-        <title>Instant Photo Printing – Custom Mugs, Frames &amp; Gifts | Krishna Creation</title>
-        <meta name="description" content="Premium instant photo printing services by Krishna Creation Mumbai – custom mugs, photo frames, canvas prints, keychains &amp; gift combos. Order online or book for your event." />
-        <meta name="keywords" content="instant photo printing Mumbai, custom photo mug, photo frame online, canvas print Mumbai, photo keychain, gift combos Mumbai, personalised gifts, photo printing service, custom printing at events, Krishna Creation printing" />
+        <title>Instant Photo &amp; Custom Mug Printing in Mumbai | Same-Day Delivery</title>
+        <meta
+          name="description"
+          content="Order custom photo mugs, magic mugs, frames & keychains online in Mumbai with same-day delivery, or book our live instant printing booth for weddings & events."
+        />
         <link rel="canonical" href="https://krishnacreationphotography.com/instant-printing" />
-        <meta property="og:url" content="https://krishnacreationphotography.com/instant-printing" />
-        <meta property="og:title" content="Instant Printing – Custom Gifts | Krishna Creation" />
-        <meta property="og:description" content="Custom mugs, photo prints, frames &amp; gift combos from Krishna Creation, Mumbai. Launching soon." />
-        <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
       </Helmet>
-      {/* Animated background blobs */}
       <div className="cs-blob cs-blob--1" />
       <div className="cs-blob cs-blob--2" />
       <div className="cs-blob cs-blob--3" />
 
       <div className="cs-content">
-        {/* Icon */}
         <div className="cs-icon-wrap">
           <ShoppingBag size={36} strokeWidth={1.5} />
           <div className="cs-sparkle cs-sparkle--1"><Sparkles size={14} /></div>
           <div className="cs-sparkle cs-sparkle--2"><Sparkles size={10} /></div>
         </div>
 
-        {/* Badge */}
         <div className="cs-badge">Coming Soon</div>
 
-        {/* Headline */}
         <h1 className="cs-title">
-          Instant Printing<br />
-          <span className="cs-title-accent">Launching Soon</span>
+          Custom Photo &amp; Mug Printing in{' '}
+          <span className="cs-title-accent">Mumbai</span> — Online Orders &amp; Live Event Booths
         </h1>
         <p className="cs-subtitle">
           Premium mugs, frames, photo prints, and custom gifting — all crafted with love.
           We're putting the finishing touches on something special for you.
         </p>
 
-        {/* Countdown */}
-        {/* <div className="cs-countdown">
-          {[
-            { value: timeLeft.days,    label: 'Days' },
-            { value: timeLeft.hours,   label: 'Hours' },
-            { value: timeLeft.minutes, label: 'Min' },
-            { value: timeLeft.seconds, label: 'Sec' },
-          ].map((unit, i) => (
-            <React.Fragment key={unit.label}>
-              <div className="cs-unit">
-                <div className="cs-unit-value">{String(unit.value).padStart(2, '0')}</div>
-                <div className="cs-unit-label">{unit.label}</div>
-              </div>
-              {i < 3 && <div className="cs-colon">:</div>}
-            </React.Fragment>
-          ))}
-        </div> */}
-
-        {/* Notify form */}
         {!submitted ? (
           <form onSubmit={handleNotify} className="cs-notify-form">
             <input
@@ -125,22 +95,30 @@ const ComingSoon: React.FC = () => {
           </div>
         )}
 
-        {/* What's coming */}
         <div className="cs-products-preview">
           {['🖼️ Photo Frames', '☕ Custom Mugs', '🖨️ Photo Prints', '🎁 Gift Combos'].map(item => (
             <div key={item} className="cs-product-chip">{item}</div>
           ))}
         </div>
 
-        {/* Social links */}
         <div className="cs-socials">
           <p className="cs-social-hint">Meanwhile, follow us for sneak peeks:</p>
           <div className="cs-social-links">
-            <a href="https://www.instagram.com/krishna_creation10" target="_blank" rel="noopener noreferrer" className="cs-social-link" onClick={() => trackSocialClick('Instagram', 'instant_printing_coming_soon')}>
+            <a
+              href="https://www.instagram.com/krishna_creation10"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cs-social-link"
+              onClick={() => trackSocialClick('Instagram', 'instant_printing_coming_soon')}
+            >
               <Instagram size={20} />
               Instagram
             </a>
-            <a href={`mailto:${import.meta.env.VITE_EMAILJS_TO_EMAIL}`} className="cs-social-link" onClick={() => trackSocialClick('Email', 'instant_printing_coming_soon')}>
+            <a
+              href={`mailto:${import.meta.env.VITE_EMAILJS_TO_EMAIL}`}
+              className="cs-social-link"
+              onClick={() => trackSocialClick('Email', 'instant_printing_coming_soon')}
+            >
               <Mail size={20} />
               Email Us
             </a>
@@ -151,22 +129,93 @@ const ComingSoon: React.FC = () => {
   );
 };
 
+// ─── Helper: build Schema.org Product JSON-LD objects ─────────────────────────
+// TODO: Ensure schemaImage URLs and placeholder prices in src/data/products.ts are finalized before launch
+const productSchemas = [
+  ...products.map(product => ({
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.title,
+    description: product.description,
+    image: product.schemaImage,
+    brand: {
+      '@type': 'Brand',
+      name: 'Krishna Creation Photography',
+    },
+    offers: {
+      '@type': 'Offer',
+      url: `https://krishnacreationphotography.com/instant-printing/${product.id}`,
+      priceCurrency: 'INR',
+      price: product.numericPrice,
+      availability: 'https://schema.org/InStock',
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: product.rating,
+      reviewCount: product.reviews,
+    },
+  })),
+  ...giftCombos.map(combo => ({
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: combo.title,
+    description: combo.contents,
+    image: combo.schemaImage,
+    brand: {
+      '@type': 'Brand',
+      name: 'Krishna Creation Photography',
+    },
+    offers: {
+      '@type': 'Offer',
+      url: `https://krishnacreationphotography.com/instant-printing/gift-combos?combo=${combo.id}`,
+      priceCurrency: 'INR',
+      price: combo.price,
+      availability: 'https://schema.org/InStock',
+    },
+  })),
+];
+
 // ═══════════════════════════════════════════════════════════════
-// PRODUCT LISTING PAGE (PLP)
+// PRODUCT LISTING STOREFRONT
 // ═══════════════════════════════════════════════════════════════
 const ProductListing: React.FC = () => {
+  const [activeMode, setActiveMode] = useState<'online' | 'booth'>('online');
+  const onlineSectionRef = useRef<HTMLElement | null>(null);
+  const boothSectionRef = useRef<HTMLElement | null>(null);
+
+  const switchMode = (mode: 'online' | 'booth') => {
+    setActiveMode(mode);
+    const targetRef = mode === 'online' ? onlineSectionRef : boothSectionRef;
+    targetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
     <div className="plp-page">
       <Helmet>
-        <title>Instant Photo Printing – Custom Mugs, Frames &amp; Gifts | Krishna Creation</title>
-        <meta name="description" content="Order premium custom photo prints, mugs, canvas prints, frames &amp; gift combos from Krishna Creation Mumbai. Turn your cherished memories into beautiful keepsakes." />
-        <meta name="keywords" content="instant photo printing Mumbai, custom photo mug, photo frame online, canvas print Mumbai, photo keychain, gift combos Mumbai, personalised gifts, photo printing service, custom printing at events, Krishna Creation printing" />
+        <title>Instant Photo &amp; Custom Mug Printing in Mumbai | Same-Day Delivery</title>
+        <meta
+          name="description"
+          content="Order custom photo mugs, magic mugs, frames & keychains online in Mumbai with same-day delivery, or book our live instant printing booth for weddings & events."
+        />
+        <meta
+          name="keywords"
+          content="instant photo printing Mumbai, custom photo mug, magic mug Mumbai, photo frame online, custom keychains Mumbai, photo print packs, gift combos Mumbai, live instant printing booth wedding events, same-day delivery Mumbai, Krishna Creation printing"
+        />
         <link rel="canonical" href="https://krishnacreationphotography.com/instant-printing" />
         <meta property="og:url" content="https://krishnacreationphotography.com/instant-printing" />
-        <meta property="og:title" content="Instant Printing – Custom Gifts | Krishna Creation" />
-        <meta property="og:description" content="Custom mugs, photo prints, frames, canvas prints &amp; gift combos from Krishna Creation, Mumbai." />
-        <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
+        <meta property="og:title" content="Instant Photo & Custom Mug Printing in Mumbai | Same-Day Delivery" />
+        <meta
+          property="og:description"
+          content="Order custom photo mugs, magic mugs, frames & keychains online in Mumbai with same-day delivery, or book our live instant printing booth for weddings & events."
+        />
+        <meta property="og:image" content="https://krishnacreationphotography.com/products/custom-photo-mugs.webp" />
+        {productSchemas.map((schema, idx) => (
+          <script key={idx} type="application/ld+json">
+            {JSON.stringify(schema)}
+          </script>
+        ))}
       </Helmet>
+
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <section className="plp-hero">
         <div className="plp-hero-icon">
@@ -174,45 +223,100 @@ const ProductListing: React.FC = () => {
         </div>
         <div className="plp-hero-badge">
           <Sparkles size={12} />
-          <span>Instant Printing</span>
+          <span>Instant Printing Storefront</span>
         </div>
         <h1 className="plp-hero-title">
-          Custom Prints &<br />
-          <span className="plp-hero-accent">Personalized Gifts</span>
+          Custom Photo &amp; Mug Printing in{' '}
+          <span className="plp-hero-accent">Mumbai</span> — Online Orders &amp; Live Event Booths
         </h1>
         <p className="plp-hero-sub">
-          Turn your cherished memories into beautiful prints, mugs, frames, and more — crafted with love and premium quality.
+          Personalised ceramic mugs, magic mugs, frames, keychains &amp; archival photo packs crafted with your memories — delivered same-day in Mumbai or printed live at your celebration.
         </p>
+
+        {/* Mode Switcher Tabs (Order Online vs Live Event Booth) */}
+        <div className="plp-mode-tabs" role="tablist" aria-label="Choose ordering mode">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeMode === 'online'}
+            className={`plp-mode-tab ${activeMode === 'online' ? 'plp-mode-tab--active' : ''}`}
+            onClick={() => switchMode('online')}
+          >
+            <ShoppingBag size={15} />
+            <span>Order Online (Mumbai Delivery)</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeMode === 'booth'}
+            className={`plp-mode-tab ${activeMode === 'booth' ? 'plp-mode-tab--active' : ''}`}
+            onClick={() => switchMode('booth')}
+          >
+            <Camera size={15} />
+            <span>Live Event Printing Booth</span>
+          </button>
+        </div>
+
         {/* Track Order CTA */}
-        <Link to="/track-order" className="plp-track-order-btn" id="plp-track-order-btn" onClick={() => trackHeroCTA('Track Your Order')}>
+        <Link
+          to="/track-order"
+          className="plp-track-order-btn"
+          id="plp-track-order-btn"
+          onClick={() => trackHeroCTA('Track Your Order')}
+        >
           <Package size={16} />
-          <span>Track Your Order</span>
+          <span>Track Existing Order</span>
           <Search size={14} />
         </Link>
       </section>
 
-      {/* ── Product Grid ─────────────────────────────────── */}
+      {/* ═══════════════════════════════════════════════════════════════
+          MODE 1 (DEFAULT): ORDER ONLINE (MUMBAI DELIVERY)
+      ═══════════════════════════════════════════════════════════════ */}
+      <section
+        id="order-online"
+        ref={onlineSectionRef}
+        className={`plp-grid-section ${activeMode === 'online' ? 'plp-section--focused' : ''}`}
+        aria-label="Order Online (Mumbai Delivery)"
+      >
+        <div className="plp-section-header">
+          <div className="plp-section-pill">
+            <Truck size={13} />
+            <span>Same-Day Mumbai Dispatch Available</span>
+          </div>
+          <h2 className="plp-section-title">Order Online (Mumbai Delivery)</h2>
+          <p className="plp-section-desc">
+            Select a product below to upload your photos, preview your design, and order personalized gifts delivered to your doorstep.
+          </p>
+        </div>
 
-      <section className="plp-grid-section">
         <div className="plp-grid">
           {products.map((product, idx) => (
             <Link
               to={`/instant-printing/${product.id}`}
               key={product.id}
               className="plp-card"
-              style={{ animationDelay: `${idx * 0.08}s` }}
-              onClick={() => trackProductClick(product.id, product.title)}
+              style={{ animationDelay: `${idx * 0.06}s` }}
+              onClick={() => trackProductClick(product.id, product.title, product.numericPrice)}
             >
-              {/* Gradient top */}
-              <div
-                className="plp-card-visual"
-                style={{ background: product.gradient }}
-              >
-                <span className="plp-card-emoji">{product.emoji}</span>
+              {/* WebP Product Image + Price + Delivery Badge */}
+              <div className="plp-card-visual" style={{ background: product.gradient }}>
+                <img
+                  src={product.image}
+                  alt={product.imageAlt}
+                  loading="lazy"
+                  width={600}
+                  height={600}
+                  className="plp-card-img"
+                />
                 <div className="plp-card-price">{product.price}</div>
+                <div className="plp-delivery-badge">
+                  <Truck size={11} />
+                  <span>{product.deliveryBadge}</span>
+                </div>
               </div>
 
-              {/* Info */}
+              {/* Card Body */}
               <div className="plp-card-info">
                 <h3 className="plp-card-title">{product.title}</h3>
                 <p className="plp-card-subtitle">{product.subtitle}</p>
@@ -241,18 +345,81 @@ const ProductListing: React.FC = () => {
                   ))}
                 </div>
 
-                {/* CTA */}
+                {/* Customization & Upload CTA */}
                 <div className="plp-card-cta" style={{ color: product.accentColor }}>
-                  Customize Now <ArrowRight size={14} />
+                  <Upload size={13} />
+                  <span>Upload Photo &amp; Customize</span>
+                  <ArrowRight size={14} />
                 </div>
               </div>
             </Link>
           ))}
         </div>
+
+        {/* ── AOV Booster: Popular Gift Combos Strip ──────────────── */}
+        <div className="aov-combos-wrap" aria-label="Popular Gift Combos">
+          <div className="aov-combos-header">
+            <div className="aov-combos-eyebrow">
+              <Gift size={14} />
+              <span>Save Up to 20% on Curated Bundles</span>
+            </div>
+            <h2 className="aov-combos-title">Popular Gift Combos</h2>
+            <p className="aov-combos-sub">
+              Pair mugs, photo frames &amp; custom keychains in ready-to-gift keepsake boxes.
+            </p>
+          </div>
+
+          <div className="aov-combos-grid">
+            {giftCombos.map(combo => {
+              const savings = combo.compareAtPrice - combo.price;
+              return (
+                <Link
+                  key={combo.id}
+                  to={`/instant-printing/gift-combos?combo=${combo.id}`}
+                  className="aov-combo-card"
+                  onClick={() => trackProductClick(`gift-combo-${combo.id}`, combo.title, combo.price)}
+                >
+                  <div className="aov-combo-thumb">
+                    <img
+                      src={combo.image}
+                      alt={combo.imageAlt}
+                      loading="lazy"
+                      width={240}
+                      height={240}
+                    />
+                  </div>
+                  <div className="aov-combo-body">
+                    <span className="aov-combo-badge">{combo.badge}</span>
+                    <h3 className="aov-combo-name">{combo.title}</h3>
+                    <p className="aov-combo-contents">{combo.contents}</p>
+                    <div className="aov-combo-pricing">
+                      <span className="aov-combo-price">₹{combo.price}</span>
+                      <span className="aov-combo-compare">₹{combo.compareAtPrice}</span>
+                      <span className="aov-combo-save">Save ₹{savings}</span>
+                    </div>
+                    <div className="aov-combo-footer">
+                      <span className="aov-combo-delivery">
+                        <Truck size={11} /> {combo.deliveryBadge}
+                      </span>
+                      <span className="aov-combo-cta">
+                        Customize <ArrowRight size={13} />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
       </section>
 
-      {/* ── Event Instant Printing Ad Section ──────────────── */}
-      <EventInstantPrinting />
+      {/* ═══════════════════════════════════════════════════════════════
+          MODE 2: LIVE EVENT PRINTING BOOTH
+      ═══════════════════════════════════════════════════════════════ */}
+      <EventInstantPrinting
+        sectionRef={boothSectionRef}
+        focused={activeMode === 'booth'}
+      />
     </div>
   );
 };
@@ -260,35 +427,47 @@ const ProductListing: React.FC = () => {
 // ═══════════════════════════════════════════════════════════════
 // EVENT INSTANT PRINTING SECTION
 // ═══════════════════════════════════════════════════════════════
-const EventInstantPrinting: React.FC = () => {
+interface EventInstantPrintingProps {
+  sectionRef?: React.RefObject<HTMLElement | null>;
+  focused?: boolean;
+}
+
+const EventInstantPrinting: React.FC<EventInstantPrintingProps> = ({ sectionRef, focused }) => {
   const steps = [
     {
       icon: <Camera size={22} />,
       title: 'Click',
-      desc: 'Our photographer captures beautiful picture of your guests during the event.',
+      desc: 'Our photographer captures crisp portraits of your guests during the celebration.',
     },
     {
       icon: <Zap size={22} />,
       title: 'Print',
-      desc: 'Photos are instantly printed within minutes — while the celebration is still going strong!',
+      desc: 'Custom photo prints, mugs, or keepsakes are produced on-site in minutes!',
     },
     {
       icon: <Gift size={22} />,
       title: 'Gift',
-      desc: 'Guests receive a personalised printed photo / Gift as their return gift before they step out.',
+      desc: 'Guests walk out with a personalized framed photo or keepsake right before they leave.',
     },
   ];
 
+  const eventTypes = ['Weddings', 'Birthdays', 'Receptions', 'Corporate Events'];
+
   const features = [
-    { icon: <Clock size={15} />, label: 'Prints in quick time' },
-    { icon: <Printer size={15} />, label: 'Premium quality paper' },
-    { icon: <Heart size={15} />, label: 'Guests absolutely love it' },
-    { icon: <CheckCircle size={15} />, label: 'Full setup included' },
-    { icon: <Star size={15} />, label: '1000+ events served' },
+    { icon: <Clock size={15} />, label: 'Prints ready in minutes' },
+    { icon: <Printer size={15} />, label: 'Lab-grade archival paper' },
+    { icon: <Heart size={15} />, label: 'Custom event borders & branding' },
+    { icon: <CheckCircle size={15} />, label: 'Full on-site booth setup included' },
+    { icon: <Star size={15} />, label: '500+ Mumbai events covered' },
   ];
 
   return (
-    <section className="eip-section">
+    <section
+      id="live-event-booth"
+      ref={sectionRef}
+      className={`eip-section ${focused ? 'eip-section--focused' : ''}`}
+      aria-label="Live Event Printing Booth"
+    >
       {/* Ambient blobs */}
       <div className="eip-blob eip-blob--1" />
       <div className="eip-blob eip-blob--2" />
@@ -297,7 +476,7 @@ const EventInstantPrinting: React.FC = () => {
       {/* Eyebrow */}
       <div className="eip-eyebrow">
         <Sparkles size={13} />
-        <span>Exclusive Event Service</span>
+        <span>Live Event Printing Booth</span>
       </div>
 
       {/* Headline */}
@@ -306,14 +485,21 @@ const EventInstantPrinting: React.FC = () => {
         <span className="eip-headline-accent"><br />A Memory In Hand</span>
       </h2>
       <p className="eip-subline">
-        We set up a live instant-printing studio at your event — wedding, birthday, corporate gathering
-        or any celebration. While your guests are enjoying the moment, we capture, print, and pack
-        their photo. By the time they're leaving, their personalised return gift is already waiting.
+        Book our on-site live instant printing booth across Mumbai for <strong>weddings, birthdays, receptions, and corporate events</strong>. While your guests enjoy the event, we shoot, print, and pack personalised photo keepsakes live on the spot.
       </p>
+
+      {/* Supported event types */}
+      <div className="eip-event-tags">
+        {eventTypes.map(type => (
+          <span key={type} className="eip-event-tag">
+            🎉 {type}
+          </span>
+        ))}
+      </div>
 
       {/* Feature pills */}
       <div className="eip-pills">
-        {features.map((f) => (
+        {features.map(f => (
           <div key={f.label} className="eip-pill">
             <span className="eip-pill-icon">{f.icon}</span>
             {f.label}
@@ -355,15 +541,17 @@ const EventInstantPrinting: React.FC = () => {
       <div className="eip-cta-wrap">
         <Link
           to="/contact"
-          onClick={() => { trackEnquiryCTA('Book Now for Your Event'); setTimeout(() => window.location.hash = "contact-us", 100); }}
+          onClick={() => {
+            trackEnquiryCTA('Book for Your Event');
+            setTimeout(() => { window.location.hash = 'contact-us'; }, 100);
+          }}
           className="eip-cta-btn"
           id="eip-book-event-cta"
         >
           <span className="eip-cta-icon">📸</span>
-          Book Now for Your Event
+          Book for Your Event
           <ArrowRight size={16} />
         </Link>
-        {/* <p className="eip-cta-note">Free consultation · No advance required · Available Pan Mumbai</p> */}
       </div>
     </section>
   );

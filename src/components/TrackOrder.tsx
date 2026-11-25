@@ -76,7 +76,9 @@ function toStageKey(status: string): StageKey {
 
 // ══════════════════════════════════════════════════════════════════════════════
 const TrackOrder: React.FC = () => {
-  const isAdmin = new URLSearchParams(window.location.search).get('admin') === '1';
+  const isAdmin =
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('admin') === '1';
 
   // ── Track state ────────────────────────────────────────────────────────────
   const [orderId, setOrderId] = useState('');
@@ -133,6 +135,7 @@ const TrackOrder: React.FC = () => {
       <Helmet>
         <title>Track Your Order | Krishna Creation Instant Printing</title>
         <meta name="description" content="Track your custom photo print order from Krishna Creation. Enter your order number to see real-time status." />
+        <link rel="canonical" href="https://krishnacreationphotography.com/track-order" />
       </Helmet>
 
       {/* ── Hero ──────────────────────────────────────────────────────── */}

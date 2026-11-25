@@ -522,9 +522,8 @@ const Home: React.FC = () => {
             <a href={`tel:+${import.meta.env.VITE_CONTACT_NUMBER}`} className="footer-nav-link" onClick={() => trackSocialClick('Phone', 'footer_nav')}>📞 Call Us</a>
             <a href={`mailto:${import.meta.env.VITE_EMAILJS_TO_EMAIL}`} className="footer-nav-link" onClick={() => trackSocialClick('Email', 'footer_nav')}>✉ Mail Us</a>
             <a href="https://www.instagram.com/krishna_creation10" target="_blank" rel="noopener noreferrer" className="footer-nav-link" onClick={() => trackSocialClick('Instagram', 'footer_nav')}>📸 Instagram</a>
-            {/* TODO: Replace with actual Mumbai studio street address and 6-digit PIN code matching LocalBusiness JSON-LD in index.html */}
             <address className="footer-address">
-              📍 TODO: [Studio Street Address &amp; Locality], Mumbai, Maharashtra – [6-Digit PIN Code]
+              📍 Solitaire Edge, Kandivali, Mumbai, Maharashtra – 400101
             </address>
           </div>
         </div>

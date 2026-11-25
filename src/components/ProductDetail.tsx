@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft, Upload, X, Star, ImagePlus, ZoomIn,
-  Check, Minus, Plus, Sparkles, PackageCheck,
+  Check, Minus, Plus, Sparkles, PackageCheck, Truck,
 } from 'lucide-react';
-import { products } from '../data/products';
+import { findProductBySlug, giftCombos, type GiftCombo } from '../data/products';
 import { useMediaModal } from './useMediaModal';
 import MediaModal from './MediaModal';
 import {
@@ -411,6 +412,12 @@ const PRINT_SIZES = [
   { id: 'a4', label: 'A4', dims: '21×29.7 cm', price: 75 }
 ] as const;
 
+const KEYCHAIN_SHAPES = [
+  { id: 'rectangle', label: 'Rectangle', desc: 'Classic landscape key fob' },
+  { id: 'heart', label: 'Heart', desc: 'Romantic gift favorite' },
+  { id: 'square', label: 'Square', desc: 'Crisp Instagram format' },
+] as const;
+
 // ── Frame Preview ─────────────────────────────────────────────────────────────
 interface FramePreviewProps {
   frame: typeof FRAME_STYLES[number] | null;
@@ -443,8 +450,15 @@ const FramePreview: React.FC<FramePreviewProps> = ({ frame, photoUrl }) => {
 // ═══════════════════════════════════════════════════════════════
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const product = products.find(p => p.id === id);
+  const product = findProductBySlug(id);
+  const canonicalId = product?.id ?? '';
+  const isMug = canonicalId === 'custom-photo-mugs' || canonicalId === 'magic-mugs';
+  const isFrame = canonicalId === 'photo-frames';
+  const isPrint = canonicalId === 'photo-print-packs';
+  const isKeychain = canonicalId === 'custom-keychains';
+  const isCombo = canonicalId === 'gift-combos';
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── Image state ────────────────────────────────────────────────
@@ -482,20 +496,32 @@ const ProductDetail: React.FC = () => {
   const [selectedSize, setSelectedSize] = useState<typeof PRINT_SIZES[number] | null>(null);
   const [quantity, setQuantity] = useState(1);
 
+  // ── Keychain & Gift Combo ──────────────────────────────────────
+  const [selectedShape, setSelectedShape] = useState<typeof KEYCHAIN_SHAPES[number]>(KEYCHAIN_SHAPES[0]);
+  const [selectedCombo, setSelectedCombo] = useState<GiftCombo>(() => {
+    const comboId = searchParams.get('combo');
+    return giftCombos.find(c => c.id === comboId) ?? giftCombos[0];
+  });
+
   // Track product view (GA4 standard view_item)
   useEffect(() => {
     if (product) {
-      const priceToTrack = id === 'photo-print' && selectedSize ? selectedSize.price : product.price;
+      const priceToTrack =
+        isPrint && selectedSize
+          ? selectedSize.price
+          : isCombo
+            ? selectedCombo.price
+            : product.numericPrice;
       trackViewItem(product.id, product.title, priceToTrack);
     }
-  }, [product, id, selectedSize]);
+  }, [product, isPrint, isCombo, selectedSize, selectedCombo.price]);
 
   // Limit: mug with theme = 1 photo; mug without theme = 3; frame = 1; others = 3
   const maxImages = useMemo(() => {
-    if (id === 'photo-frame') return 1;
-    if (id === 'photo-mug' && selectedTheme) return 1;
+    if (isFrame) return 1;
+    if (isMug && selectedTheme) return 1;
     return MAX_IMAGES_DEFAULT;
-  }, [id, selectedTheme]);
+  }, [isFrame, isMug, selectedTheme]);
 
   const { modalOpen, openModal, closeModal, prevModal, nextModal, modalItem, hasPrev, hasNext } =
     useMediaModal(previewUrls.map((url, i) => ({ url, caption: `Photo ${i + 1} of ${previewUrls.length}` })));
@@ -511,7 +537,7 @@ const ProductDetail: React.FC = () => {
     setImages(prev => [...prev, ...newFiles]);
     setPreviewUrls(prev => [...prev, ...newUrls]);
     if (fileInputRef.current) fileInputRef.current.value = '';
-    if (id) trackPhotoUpload(id, images.length + newFiles.length);
+    if (canonicalId) trackPhotoUpload(canonicalId, images.length + newFiles.length);
   };
 
   const removeImage = (idx: number) => {
@@ -527,20 +553,23 @@ const ProductDetail: React.FC = () => {
       return prev.filter((_, i) => i !== idx);
     });
     setImages(prev => prev.filter((_, i) => i !== idx));
-    if (id) trackPhotoRemove(id);
+    if (canonicalId) trackPhotoRemove(canonicalId);
   };
 
-  const printPrice = id === 'photo-print' && selectedSize ? selectedSize.price * quantity : null;
-  const ctaPrice = printPrice !== null ? `₹${printPrice}` : product?.price ?? '';
+  const printPrice = isPrint && selectedSize ? selectedSize.price * quantity : null;
+  const comboPrice = isCombo ? selectedCombo.price : null;
+  const customPrice = printPrice ?? comboPrice ?? undefined;
+  const ctaPrice =
+    customPrice !== undefined ? `₹${customPrice}` : product?.price ?? '';
 
   const canCheckout = () => {
     if (images.length === 0) return false;
-    if (id === 'photo-print' && !selectedSize) return false;
+    if (isPrint && !selectedSize) return false;
     return true;
   };
 
   const ctaHint = () =>
-    id === 'photo-print' && !selectedSize
+    isPrint && !selectedSize
       ? 'Select a size to continue'
       : 'Upload photos to continue';
 
@@ -622,52 +651,110 @@ const ProductDetail: React.FC = () => {
 
   return (
     <div className="pdp-page">
-      {/* Back */}
+      <Helmet>
+        <title>{product.title} in Mumbai | Krishna Creation Instant Printing</title>
+        <meta
+          name="description"
+          content={`${product.subtitle} Order ${product.title} online in Mumbai (${product.price}) with Same-Day Mumbai Delivery from Krishna Creation Photography.`}
+        />
+        <link rel="canonical" href={`https://krishnacreationphotography.com/instant-printing/${product.id}`} />
+        <meta property="og:url" content={`https://krishnacreationphotography.com/instant-printing/${product.id}`} />
+        <meta property="og:title" content={`${product.title} in Mumbai | Krishna Creation Instant Printing`} />
+        <meta
+          property="og:description"
+          content={`${product.subtitle} Order online in Mumbai with same-day delivery from Krishna Creation Photography.`}
+        />
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: product.title,
+          description: product.description,
+          image: product.schemaImage,
+          brand: {
+            '@type': 'Brand',
+            name: 'Krishna Creation Photography',
+          },
+          offers: {
+            '@type': 'Offer',
+            url: `https://krishnacreationphotography.com/instant-printing/${product.id}`,
+            priceCurrency: 'INR',
+            price: isCombo ? selectedCombo.price : product.numericPrice,
+            availability: 'https://schema.org/InStock',
+          },
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: product.rating,
+            reviewCount: product.reviews,
+          },
+        })}</script>
+      </Helmet>
+      {/* Topbar */}
       <div className="pdp-topbar">
         <button onClick={() => navigate('/instant-printing')} className="pdp-back-btn">
-          <ArrowLeft size={18} /><span>All Products</span>
+          <ArrowLeft size={17} /><span>All Products</span>
         </button>
+        <span className="pdp-topbar-crumb">{product.title}</span>
       </div>
 
-      {/* Hero visual */}
-      <div className="pdp-visual" style={{ background: product.gradient }}>
-        <span className="pdp-emoji">{product.emoji}</span>
-        <div className="pdp-visual-ring" />
-      </div>
-
-      {/* Info */}
-      <div className="pdp-info">
-        <div className="pdp-price-badge">
-          {id === 'photo-print' && selectedSize ? `₹${selectedSize.price}/print` : product.price}
-        </div>
-        <h1 className="pdp-title">{product.title}</h1>
-        <p className="pdp-subtitle">{product.subtitle}</p>
-
-        {/* Rating */}
-        <div className="pdp-rating-row">
-          <div className="pdp-stars">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} size={16}
-                fill={i < Math.floor(product.rating) ? '#f59e0b' : 'transparent'}
-                color={i < Math.floor(product.rating) ? '#f59e0b' : 'rgba(255,255,255,0.2)'} />
-            ))}
+      {/* Main Responsive Split Shell (Desktop 2-col showcase, Mobile 1-col zero-overflow) */}
+      <div className="pdp-shell">
+        {/* Hero Product Gallery Card */}
+        <div className="pdp-gallery">
+          <div className="pdp-hero-card">
+            <img
+              src={isCombo ? selectedCombo.image : product.image}
+              alt={isCombo ? selectedCombo.imageAlt : product.imageAlt}
+              width={800}
+              height={800}
+              className="pdp-hero-img"
+            />
+            <div className="pdp-hero-overlay" />
+            <div className="pdp-hero-badges">
+              <span className="pdp-delivery-pill">
+                <Truck size={13} />
+                {isCombo ? selectedCombo.deliveryBadge : product.deliveryBadge}
+              </span>
+              <span className="pdp-hero-rating-pill">
+                <Star size={12} fill="#f59e0b" color="#f59e0b" />
+                {product.rating} ({product.reviews})
+              </span>
+            </div>
           </div>
-          <span className="pdp-rating-text">{product.rating} · {product.reviews} reviews</span>
         </div>
 
-        {/* Tags */}
-        <div className="pdp-tags">
-          {product.tags.map(tag => <span key={tag} className="pdp-tag">{tag}</span>)}
-        </div>
+        {/* Info & Interactive Customizer */}
+        <div className="pdp-info">
+          <div className="pdp-header-card">
+            <div className="pdp-price-row">
+              <div className="pdp-price-badge">
+                {isPrint && selectedSize
+                  ? `₹${selectedSize.price}/print`
+                  : isCombo
+                    ? `₹${selectedCombo.price}`
+                    : product.price}
+              </div>
+              <span className="pdp-eyebrow">Personalized Gift · Mumbai Studio</span>
+            </div>
+            <h1 className="pdp-title">{product.title}</h1>
+            <p className="pdp-subtitle">{product.subtitle}</p>
 
-        {/* ══════════════ MUG FLOW ══════════════ */}
-        {id === 'photo-mug' && (
+            {/* Tags */}
+            <div className="pdp-tags">
+              {product.tags.map(tag => <span key={tag} className="pdp-tag">{tag}</span>)}
+            </div>
+          </div>
+
+        {/* ══════════════ MUG FLOW (Custom Photo Mugs & Magic Mugs) ══════════════ */}
+        {isMug && (
           <>
             <div className="pdp-desc-section">
-              <h3 className="pdp-section-heading">☕ Ceramic Photo Mug</h3>
+              <h3 className="pdp-section-heading">
+                {canonicalId === 'magic-mugs' ? '✨ Heat-Reveal Magic Mug' : '☕ Ceramic Photo Mug'}
+              </h3>
               <p className="pdp-desc-text">
-                Choose a designer theme <em>or</em> upload <strong>1–3 of your own photos</strong> to
-                wrap beautifully around a white ceramic mug. Drag the 3D preview to inspect every angle.
+                {canonicalId === 'magic-mugs'
+                  ? <>Choose a designer theme <em>or</em> upload <strong>1–3 of your own photos</strong> hidden under matte-black heat-sensitive ceramic coating.</>
+                  : <>Choose a designer theme <em>or</em> upload <strong>1–3 of your own photos</strong> to wrap beautifully around a white ceramic mug. Drag the 3D preview to inspect every angle.</>}
               </p>
             </div>
 
@@ -710,7 +797,7 @@ const ProductDetail: React.FC = () => {
         )}
 
         {/* ══════════════ FRAME FLOW ══════════════ */}
-        {id === 'photo-frame' && (
+        {isFrame && (
           <>
             <div className="pdp-desc-section">
               <h3 className="pdp-section-heading">🖼️ Choose a Frame Style</h3>
@@ -744,8 +831,8 @@ const ProductDetail: React.FC = () => {
           </>
         )}
 
-        {/* ══════════════ PRINT FLOW ══════════════ */}
-        {id === 'photo-print' && (
+        {/* ══════════════ PRINT PACKS FLOW ══════════════ */}
+        {isPrint && (
           <>
             <div className="pdp-desc-section">
               <h3 className="pdp-section-heading">🖨️ Choose Print Size</h3>
@@ -791,22 +878,65 @@ const ProductDetail: React.FC = () => {
           </>
         )}
 
-        {/* ══════════════ DEFAULT FLOW ══════════════ */}
-        {id !== 'photo-mug' && id !== 'photo-frame' && id !== 'photo-print' && (
+        {/* ══════════════ KEYCHAIN FLOW ══════════════ */}
+        {isKeychain && (
           <>
             <div className="pdp-desc-section">
-              <h3 className="pdp-section-heading">About This Product</h3>
+              <h3 className="pdp-section-heading">🔑 Choose Keychain Shape</h3>
               <p className="pdp-desc-text">
-                Create a one-of-a-kind {product.title.toLowerCase()} with your favourite photos.
-                Upload up to <strong>3 photos</strong> and we'll craft a beautiful personalised product.
+                Durable stainless metal &amp; acrylic photo keychains. Pick your shape and upload up to 3 photos.
               </p>
+            </div>
+            <div className="print-size-grid">
+              {KEYCHAIN_SHAPES.map(shape => (
+                <button
+                  key={shape.id}
+                  className={`print-size-chip ${selectedShape.id === shape.id ? 'print-size-chip--selected' : ''}`}
+                  onClick={() => setSelectedShape(shape)}
+                  aria-label={`Select keychain shape ${shape.label}`}
+                >
+                  <span className="print-size-label">{shape.label}</span>
+                  <span className="print-size-dims">{shape.desc}</span>
+                </button>
+              ))}
             </div>
             {renderUploadSection('Upload Your Photos', true,
               `PNG, JPG up to 10MB · Max ${MAX_IMAGES_DEFAULT} photos`)}
           </>
         )}
 
-        {/* ── CTA ──────────────────────────────────────────────────── */}
+        {/* ══════════════ GIFT COMBOS FLOW ══════════════ */}
+        {isCombo && (
+          <>
+            <div className="pdp-desc-section">
+              <h3 className="pdp-section-heading">🎁 Choose Gift Combo Box</h3>
+              <p className="pdp-desc-text">
+                Save more with our curated gift bundles. Pick a gift box and upload photos to personalize all included keepsakes.
+              </p>
+            </div>
+            <div className="pdp-combo-picker">
+              {giftCombos.map(combo => (
+                <button
+                  key={combo.id}
+                  type="button"
+                  className={`pdp-combo-option ${selectedCombo.id === combo.id ? 'pdp-combo-option--selected' : ''}`}
+                  onClick={() => setSelectedCombo(combo)}
+                >
+                  <div className="pdp-combo-opt-head">
+                    <span className="pdp-combo-opt-name">{combo.title}</span>
+                    <span className="pdp-combo-opt-price">₹{combo.price}</span>
+                  </div>
+                  <span className="pdp-combo-opt-contents">{combo.contents}</span>
+                  <span className="pdp-combo-opt-badge">{combo.badge}</span>
+                </button>
+              ))}
+            </div>
+            {renderUploadSection('Upload Photos for Your Combo Box', true,
+              `PNG, JPG up to 10MB · Max ${MAX_IMAGES_DEFAULT} photos`)}
+          </>
+        )}
+
+        {/* ══════════════ CTA ──────────────────────────────────────────────────── */}
         <div className="pdp-cta-section">
           <button
             id="pdp-add-to-cart-btn"
@@ -814,8 +944,16 @@ const ProductDetail: React.FC = () => {
             disabled={!canCheckout()}
             onClick={() => {
               if (product) {
-                const unitPrice = printPrice !== null ? selectedSize?.price ?? 0 : product.price;
-                const variant = selectedTheme?.name || selectedFrame?.name || selectedSize?.label;
+                const unitPrice = isPrint
+                  ? selectedSize?.price ?? 0
+                  : isCombo
+                    ? selectedCombo.price
+                    : product.numericPrice;
+                const variant = isCombo
+                  ? selectedCombo.title
+                  : isKeychain
+                    ? `${selectedShape.label} Keychain`
+                    : selectedTheme?.name || selectedFrame?.name || selectedSize?.label;
                 trackAddToCart(product.id, product.title, unitPrice, quantity, variant);
               }
               navigatingToCheckoutRef.current = true;
@@ -825,12 +963,16 @@ const ProductDetail: React.FC = () => {
                   images,           // File[] for Drive upload
                   imageCount: images.length,
                   previewUrls,
-                  selectedTheme: selectedTheme?.name,
+                  selectedTheme: isCombo
+                    ? selectedCombo.title
+                    : isKeychain
+                      ? `Shape: ${selectedShape.label}`
+                      : selectedTheme?.name,
                   selectedFrame: selectedFrame?.name,
                   selectedSize: selectedSize?.label,
                   selectedSizeDims: selectedSize?.dims,
                   quantity,
-                  customPrice: printPrice ?? undefined,
+                  customPrice,
                 },
               });
             }}
@@ -839,6 +981,7 @@ const ProductDetail: React.FC = () => {
             {!canCheckout() ? ctaHint() : `Place Order · ${ctaPrice}`}
           </button>
           {!canCheckout() && <p className="pdp-cta-hint">{ctaHint()}</p>}
+        </div>
         </div>
       </div>
 

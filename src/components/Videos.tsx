@@ -209,9 +209,34 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, index }) => {
   );
 };
 
+// ── Shared SEO metadata for Videos (always emitted, even before Drive loads) ─
+const VideosHelmet: React.FC = () => (
+  <Helmet>
+    <title>Videography Portfolio – Best Cinematic Wedding Films Mumbai | Krishna Creation</title>
+    <meta name="description" content="Watch Krishna Creation's cinematic videography portfolio – full-length wedding films, pre-wedding videos & event coverage in Mumbai. 4K cinematic storytelling by Mumbai's best wedding videographer. Book now!" />
+    <meta name="keywords" content="best wedding videographer Mumbai, cinematic wedding film Mumbai, wedding video Mumbai, pre-wedding video Mumbai, full wedding film, 4K wedding videography Mumbai, event videography Mumbai, Krishna Creation videos, wedding cinematographer Mumbai, candid wedding film, top videographer Mumbai" />
+    <link rel="canonical" href="https://krishnacreationphotography.com/videos" />
+    <meta property="og:url" content="https://krishnacreationphotography.com/videos" />
+    <meta property="og:type" content="video.other" />
+    <meta property="og:title" content="Videography Portfolio | Krishna Creation – Best Wedding Filmmaker Mumbai" />
+    <meta property="og:description" content="Cinematic 4K wedding films & event videography by Krishna Creation, Mumbai's best videography studio." />
+    <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
+    <meta property="og:image:alt" content="Cinematic videography portfolio by Krishna Creation Mumbai" />
+    <script type="application/ld+json">{JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://krishnacreationphotography.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Videography Portfolio", "item": "https://krishnacreationphotography.com/videos" }
+      ]
+    })}</script>
+  </Helmet>
+);
+
 // ── Skeleton loader ────────────────────────────────────────────────────────────
 const VideosSkeleton: React.FC = () => (
   <div className="videos-page">
+    <VideosHelmet />
     <div className="page-hero page-hero--dark">
       <div className="page-hero-icon"><Video size={32} strokeWidth={1.5} /></div>
       <h1 className="page-hero-title">Videography Portfolio</h1>
@@ -227,6 +252,7 @@ const VideosSkeleton: React.FC = () => (
 // ── Empty / Error state ────────────────────────────────────────────────────────
 const VideosEmpty: React.FC<{ error?: string | null }> = ({ error }) => (
   <div className="videos-page">
+    <VideosHelmet />
     <div className="page-hero page-hero--dark">
       <div className="page-hero-icon"><Video size={32} strokeWidth={1.5} /></div>
       <h1 className="page-hero-title">Videography Portfolio</h1>
@@ -274,26 +300,7 @@ const Videos: React.FC = () => {
 
   return (
     <div className="videos-page">
-      <Helmet>
-        <title>Videography Portfolio – Best Cinematic Wedding Films Mumbai | Krishna Creation</title>
-        <meta name="description" content="Watch Krishna Creation's cinematic videography portfolio – full-length wedding films, pre-wedding videos & event coverage in Mumbai. 4K cinematic storytelling by Mumbai's best wedding videographer. Book now!" />
-        <meta name="keywords" content="best wedding videographer Mumbai, cinematic wedding film Mumbai, wedding video Mumbai, pre-wedding video Mumbai, full wedding film, 4K wedding videography Mumbai, event videography Mumbai, Krishna Creation videos, wedding cinematographer Mumbai, candid wedding film, top videographer Mumbai" />
-        <link rel="canonical" href="https://krishnacreationphotography.com/videos" />
-        <meta property="og:url" content="https://krishnacreationphotography.com/videos" />
-        <meta property="og:type" content="video.other" />
-        <meta property="og:title" content="Videography Portfolio | Krishna Creation – Best Wedding Filmmaker Mumbai" />
-        <meta property="og:description" content="Cinematic 4K wedding films & event videography by Krishna Creation, Mumbai's best videography studio." />
-        <meta property="og:image" content="https://krishnacreationphotography.com/logo.png" />
-        <meta property="og:image:alt" content="Cinematic videography portfolio by Krishna Creation Mumbai" />
-        <script type="application/ld+json">{JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "BreadcrumbList",
-          "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://krishnacreationphotography.com/" },
-            { "@type": "ListItem", "position": 2, "name": "Videography Portfolio", "item": "https://krishnacreationphotography.com/videos" }
-          ]
-        })}</script>
-      </Helmet>
+      <VideosHelmet />
 
       {/* Page Hero */}
       <div className="page-hero page-hero--dark">
